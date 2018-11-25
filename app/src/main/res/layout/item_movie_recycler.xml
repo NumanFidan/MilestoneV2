@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/movie_item_parent_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="8dp"
+    android:clipChildren="false"
+    android:transitionGroup="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/background_white_rounded_corner"
+        android:orientation="vertical"
+        android:paddingStart="118dp">
+
+        <TextView
+            android:id="@+id/item_movie_title_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/custom_color_primary"
+            android:ellipsize="end"
+            android:maxEms="100"
+            android:maxLines="1"
+            android:padding="2dp"
+            android:text="@string/sample_movie_name"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/genres_itemMovie_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"/>
+        </HorizontalScrollView>
+
+        <TextView
+            android:id="@+id/item_movie_description_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/custom_color_primary"
+            android:ellipsize="end"
+            android:maxEms="100"
+            android:maxLines="3"
+            android:padding="2dp"
+            android:text="@string/sample_movie_description"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/details_movieItem_button"
+            android:layout_width="wrap_content"
+            android:layout_height="24dp"
+            android:layout_gravity="center_vertical|right"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            android:background="@drawable/primary_rounded_background"
+            android:text="@string/details"
+            android:textColor="@color/custom_color_primary"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|left"
+        android:layout_marginLeft="16dp"
+        android:layout_marginBottom="20dp">
+
+        <ImageView
+            android:id="@+id/item_movie_poster_imageview"
+            android:layout_width="100dp"
+            android:layout_height="150dp"
+            android:paddingBottom="8dp"
+            android:paddingEnd="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/sample_poster" />
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:background="@drawable/primary_rounded_background"
+                tools:srcCompat="@tools:sample/avatars" />
+
+            <TextView
+                android:id="@+id/rating_itemMovie_textView"
+                android:layout_width="wrap_content"
+                android:textColor="@color/custom_color_primary"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+
+        </FrameLayout>
+
+    </FrameLayout>
+
+
+</FrameLayout>

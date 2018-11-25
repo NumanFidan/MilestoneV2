@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">MilestoneV2</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="popular_movies">Popular Movies</string>
+    <string name="sample_movie_name">Venom</string>
+    <string name="sample_movie_genres">Science Fiction</string>
+    <string name="sample_movie_release_date">2018-10-03</string>
+    <string name="details">Details</string>
+    <string name="sample_movie_description">When Eddie Brock acquires the powers of a symbiote, he will have to release his alter-ego \'Venom\' to save his life.</string>
+    <string name="languageCodeForApı">en-US</string>
+    <string name="sample_movie_long_description">The android.R.styleable class and its fields were removed from the public API, to better ensure forward-compatibility for applications. The constants declared in android.R.styleable were platform-specific and subject to arbitrary change across versions, so were not suitable for use by applications. You can still access the platform\'s styleable attributes from your resources or code. To do so, declare a custom resource element using a in your project\'s res/values/R.attrs file, then declare the attribute inside. For examples, see \"sdk\"/samples/ApiDemos/res/values/attrs.xml. For more information about custom resources, see Custom Layout Resources. Note that the android.R.styleable documentation is still provided in the SDK, but only as a reference of the platform\'s styleable attributes for the various elements.  The android.R.styleable class and its fields were removed from the public API, to better ensure forward-compatibility for applications. The constants declared in android.R.styleable were platform-specific and subject to arbitrary change across versions, so were not suitable for use by applications. You can still access the platform\'s styleable attributes from your resources or code. To do so, declare a custom resource element using a in your project\'s res/values/R.attrs file, then declare the attribute inside. For examples, see \"sdk\"/samples/ApiDemos/res/values/attrs.xml. For more information about custom resources, see Custom Layout Resources. Note that the android.R.styleable documentation is still provided in the SDK, but only as a reference of the platform\'s styleable attributes for the various elements.  The android.R.styleable class and its fields were removed from the public API, to better ensure forward-compatibility for applications. The constants declared in android.R.styleable were platform-specific and subject to arbitrary change across versions, so were not suitable for use by applications. You can still access the platform\'s styleable attributes from your resources or code. To do so, declare a custom resource element using a in your project\'s res/values/R.attrs file, then declare the attribute inside. For examples, see \"sdk\"/samples/ApiDemos/res/values/attrs.xml. For more information about custom resources, see Custom Layout Resources. Note that the android.R.styleable documentation is still provided in the SDK, but only as a reference of the platform\'s styleable attributes for the various elements.  The android.R.styleable class and its fields were removed from the public API, to better ensure forward-compatibility for applications. The constants declared in android.R.styleable were platform-specific and subject to arbitrary change across versions, so were not suitable for use by applications. You can still access the platform\'s styleable attributes from your resources or code. To do so, declare a custom resource element using a in your project\'s res/values/R.attrs file, then declare the attribute inside. For examples, see \"sdk\"/samples/ApiDemos/res/values/attrs.xml. For more information about custom resources, see Custom Layout Resources. Note that the android.R.styleable documentation is still provided in the SDK, but only as a reference of the platform\'s styleable attributes for the various elements.</string>
+    <string name="sample_rating_vote">6.6 from 2213 vote</string>
+    <string name="sample_tagline">There is no equal</string>
+    <string name="see_other_details"><u>See other details...</u></string>
+    <string name="hide_details"><u>Hide details...</u></string>
+    <string name="budget"><big><b>Budget</b></big></string>
+    <string name="popularity"><big><b>Popularity</b></big></string>
+    <string name="imdb_page"><big><b>IMDB Page</b></big></string>
+    <string name="original_title"><big><b>Original Title</b></big></string>
+    <string name="original_language"><big><b>Original Language</b></big></string>
+    <string name="release_date"><big><b>Release Date</b></big></string>
+    <string name="revenue"><big><b>Revenue</b></big></string>
+    <string name="run_time"><big><b>Run time</b></big></string>
+    <string name="current_status"><big><b>Current Status</b></big></string>
+    <string name="votes"><big><b>Votes</b></big></string>
+    <string name="currency">$</string>
+    <string name="production_company"><big><b>Production Company</b></big></string>
+    <string name="production_companies"><big><b>Production Companies</b></big></string>
+    <string name="minute">min</string>
+    <string name="this_film_contains_adult_contents">This film contains adult contents.</string>
+    <string name="this_film_doesnt_contain_adult_contents">This film doesn\'t contain adult contents.</string>
+    <string name="ok">OK</string>
+</resources>

@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "246102119565",
+    "firebase_url": "https://milestonev2.firebaseio.com",
+    "project_id": "milestonev2",
+    "storage_bucket": "milestonev2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:246102119565:android:98b344e4f2696072",
+        "android_client_info": {
+          "package_name": "com.simplertutorials.android.milestonev2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "246102119565-ccgdmuu5vcdebc0bs5tvf1k41fjo4u8m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.simplertutorials.android.milestonev2",
+            "certificate_hash": "26e0e0cc6c6758559177bec452b63e8fb8f7b6e8"
+          }
+        },
+        {
+          "client_id": "246102119565-nvvuuavhsci7b7mvr6lo0jme72s15q3o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCW5Af9ZrRhRbgeGuwIdZaBxwdERLVjaVo"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "246102119565-nvvuuavhsci7b7mvr6lo0jme72s15q3o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
