@@ -9,6 +9,8 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -21,7 +23,10 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class MovieListRecyclerViewAdapter extends RecyclerView.Adapter<MovieListRecyclerViewHolder> {
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+public class MovieListRecyclerViewAdapter extends RecyclerView.Adapter<MovieListRecyclerViewAdapter.MovieListRecyclerViewHolder> {
 
     private ArrayList<Movie> movieArrayList;
     private Context context;
@@ -39,7 +44,7 @@ public class MovieListRecyclerViewAdapter extends RecyclerView.Adapter<MovieList
     public MovieListRecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int i) {
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View view = layoutInflater.inflate(R.layout.item_movie_recycler, parent, false);
-        return new MovieListRecyclerViewHolder(view, context);
+        return new MovieListRecyclerViewHolder(view);
     }
 
     @Override
@@ -52,22 +57,18 @@ public class MovieListRecyclerViewAdapter extends RecyclerView.Adapter<MovieList
         setMoviePosterWithPicasso(holder.poster, i);
 
         holder.detailsBtn.setClickable(false);
-        holder.parentLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                movieClickListener.onMovieItemClick(movieArrayList.get(i), holder.itemView);
-            }
-        });
+        holder.parentLayout.setOnClickListener(view ->
+                movieClickListener.onMovieItemClick(movieArrayList.get(i), holder.itemView));
 
     }
 
     private void addGenres(LinearLayout genreLayout, int position) {
-        ArrayList<Integer> genreList  = movieArrayList.get(position).getGenreIds();
+        ArrayList<Integer> genreList = movieArrayList.get(position).getGenreIds();
         genreLayout.removeAllViews();
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.setMargins(10,10,10,10);
+        params.setMargins(10, 10, 10, 10);
         params.gravity = Gravity.CENTER;
 
         for (int i = 0; i < genreList.size(); i++) {
@@ -92,6 +93,34 @@ public class MovieListRecyclerViewAdapter extends RecyclerView.Adapter<MovieList
     @Override
     public int getItemCount() {
         return movieArrayList.size();
+    }
+
+    class MovieListRecyclerViewHolder extends RecyclerView.ViewHolder {
+
+        @BindView(R.id.item_movie_title_textview)
+        TextView itemTitle;
+        @BindView(R.id.item_movie_description_textview)
+        TextView itemDescription;
+        @BindView(R.id.rating_itemMovie_textView)
+        TextView itemRating;
+
+        @BindView(R.id.movie_item_parent_layout)
+        FrameLayout parentLayout;
+
+        @BindView(R.id.genres_itemMovie_layout)
+        LinearLayout genreLayout;
+
+        @BindView(R.id.item_movie_poster_imageview)
+        ImageView poster;
+
+        @BindView(R.id.details_movieItem_button)
+        Button detailsBtn;
+
+        MovieListRecyclerViewHolder(@NonNull View itemView) {
+            super(itemView);
+            ButterKnife.bind(this, itemView);
+
+        }
     }
 
 }
