@@ -19,7 +19,7 @@ import java.util.HashMap;
 public class ApiRequest {
 
     private static ApiRequest instance = new ApiRequest();
-    private static int numberOfAvailablePage;
+    private static int numberOfAvailablePage =1;
 
 
     public ApiRequest() {

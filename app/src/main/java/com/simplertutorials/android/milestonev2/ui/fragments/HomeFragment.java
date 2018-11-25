@@ -16,47 +16,42 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Source;
-import com.simplertutorials.android.milestonev2.DataHolder.ApiRequest;
-import com.simplertutorials.android.milestonev2.DataHolder.DataHolder;
 import com.simplertutorials.android.milestonev2.MainActivity;
 import com.simplertutorials.android.milestonev2.R;
 import com.simplertutorials.android.milestonev2.ui.adapters.MovieListRecyclerViewAdapter;
+import com.simplertutorials.android.milestonev2.ui.interfaces.HomeFragmentMVP;
 import com.simplertutorials.android.milestonev2.ui.interfaces.MovieClickListener;
 import com.simplertutorials.android.milestonev2.domain.Movie;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
 import com.transitionseverywhere.Explode;
 import com.transitionseverywhere.Fade;
 import com.transitionseverywhere.Transition;
 import com.transitionseverywhere.TransitionManager;
 import com.transitionseverywhere.TransitionSet;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.ArrayList;
 
-public class HomeFragment extends Fragment implements MovieClickListener {
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+public class HomeFragment extends Fragment implements MovieClickListener, HomeFragmentMVP.View {
 
     private static final int NOTIFY_ADAPTER_DATA_CHANGE = 100;
     private static final int NOTIFY_CONNECTION_ERROR = 101;
     private ArrayList<Movie> movieArrayList;
     private MovieListRecyclerViewAdapter adapter;
-    private RecyclerView movieRecyclerView;
-    private int currentRequestedPage = 0;
+
+    @BindView(R.id.movieListRecyclerView)
+    RecyclerView movieRecyclerView;
+
     private Handler updateHandler;
     private ProgressDialog movieLoadingDialog;
+    private HomeFragmentMVP.Presenter presenter;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -65,6 +60,8 @@ public class HomeFragment extends Fragment implements MovieClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        presenter = new HomeFragmentPresenter(this);
+
         setUpActionBar();
     }
 
@@ -74,17 +71,18 @@ public class HomeFragment extends Fragment implements MovieClickListener {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
+        ButterKnife.bind(this, view);
+
         movieArrayList = new ArrayList<>();
         adapter = new MovieListRecyclerViewAdapter(getContext(), movieArrayList, this);
 
         setUpRecyclerView(view);
-        loadNextPage();
+        presenter.loadNextPage(movieArrayList);
 
         return view;
     }
 
     private void setUpRecyclerView(View view) {
-        movieRecyclerView = view.findViewById(R.id.movieListRecyclerView);
         movieRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         movieRecyclerView.setHasFixedSize(true);
         movieRecyclerView.setAdapter(adapter);
@@ -99,8 +97,7 @@ public class HomeFragment extends Fragment implements MovieClickListener {
                     //if user is not able to scroll down this means its end of the RecyclerView
                     if (!recyclerView.canScrollVertically(View.FOCUS_DOWN)) {
                         //if we still have results to load from API, load next page
-                        if (ApiRequest.getInstance().getNumberOfAvailablePage() > currentRequestedPage)
-                            loadNextPage();
+                        presenter.loadNextPage(movieArrayList);
                     }
                 }
             }
@@ -108,40 +105,23 @@ public class HomeFragment extends Fragment implements MovieClickListener {
 
     }
 
-    private void loadNextPage() {
-        currentRequestedPage++;
-        showProgressDialogToUser("Loading Movies...");
+    @Override
+    public String getLanguageString() {
+        return getString(R.string.languageCodeForApı);
+    }
 
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    movieArrayList.addAll(ApiRequest.getInstance()
-                            .requestPopularMovies(currentRequestedPage,
-                                    DataHolder.getInstance().APP_LANGUAGE));
-                    //If genres not fetched correctly on MainActivity then we will collect it here
-                    if (DataHolder.getInstance().getGenreMap().size() < 1) {
-                        Log.w("DataHolderHomeFragment", "DataHolder was empty, fetching" +
-                                "data from Apı Server");
-                        DataHolder.getInstance().setGenreMap(ApiRequest.getInstance()
-                                .fetchGenreList(getString(R.string.languageCodeForApı)));
-                    }
+    @Override
+    public void dataChangedRecyclerViewHandler() {
+        Message handlerMessage = new Message();
+        handlerMessage.what = NOTIFY_ADAPTER_DATA_CHANGE;
+        updateHandler.sendMessage(handlerMessage);
+    }
 
-                    Message handlerMessage = new Message();
-                    handlerMessage.what = NOTIFY_ADAPTER_DATA_CHANGE;
-                    updateHandler.sendMessage(handlerMessage);
-
-                } catch (IOException | JSONException e) {
-                    e.printStackTrace();
-                    dismissLoadingDialog();
-
-                    Message handlerMessage = new Message();
-                    handlerMessage.what = NOTIFY_CONNECTION_ERROR;
-                    updateHandler.sendMessage(handlerMessage);
-                }
-            }
-        });
-        thread.start();
+    @Override
+    public void connectionErrorHandler() {
+        Message handlerMessage = new Message();
+        handlerMessage.what = NOTIFY_ADAPTER_DATA_CHANGE;
+        updateHandler.sendMessage(handlerMessage);
     }
 
     private void showConnectionErrorDialog() {
@@ -153,8 +133,7 @@ public class HomeFragment extends Fragment implements MovieClickListener {
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        currentRequestedPage--;
-                        loadNextPage();
+                        presenter.loadNextPage(movieArrayList);
                         alertDialog.dismiss();
                     }
                 });
@@ -168,7 +147,8 @@ public class HomeFragment extends Fragment implements MovieClickListener {
         alertDialog.show();
     }
 
-    private void showProgressDialogToUser(String message) {
+    @Override
+    public void showProgressDialogToUser(String message) {
         movieLoadingDialog = new ProgressDialog(getContext());
         movieLoadingDialog.setTitle(null);
         movieLoadingDialog.setMessage(message);
@@ -176,7 +156,8 @@ public class HomeFragment extends Fragment implements MovieClickListener {
         movieLoadingDialog.show();
     }
 
-    private void dismissLoadingDialog() {
+    @Override
+    public void dismissLoadingDialog() {
         movieLoadingDialog.dismiss();
     }
 
@@ -208,110 +189,12 @@ public class HomeFragment extends Fragment implements MovieClickListener {
     public void onMovieItemClick(Movie movie, View itemView) {
         showProgressDialogToUser("Getting Movie From Server");
 
-        getDetailsFromFirestore(movie.getId(), Source.CACHE, true, true, itemView);
+        presenter.getDetailsOfMovie(movie.getId(), Source.CACHE, true, true, itemView);
     }
 
-
-    private void getDetailsFromFirestore(final String id, Source source,
-                                         final boolean tryFirestoreServer, final boolean tryAPI,
-                                         final View clickedItemView) {
-        // We will going to try to fetch data from Firestore cache
-        // If we could not find we will try Firestore Server
-        // If we could nor find again, we will try API request.
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        db.collection("Movies")
-                .document(id)
-                .get(source)
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        if (documentSnapshot.exists()) {
-                            Movie currentMovie = documentSnapshot.toObject(Movie.class);
-                            movieFetchSuccessfully(currentMovie, clickedItemView);
-
-                            Log.w("Firestore",
-                                    currentMovie.getTitle() + ": Movie fetched from firestore isCache?"
-                                            + tryFirestoreServer);
-                        } else {
-                            //This means we could not find data on Cache
-                            //We could not found it on Server
-                            getDetailsFromAPI(id, clickedItemView);
-                        }
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        if (tryFirestoreServer)
-                            getDetailsFromFirestore(id, Source.SERVER, false,
-                                    true, clickedItemView);
-                        else if (tryAPI)
-                            getDetailsFromAPI(id, clickedItemView);
-                    }
-                });
-    }
-
-    private void uploadMovieToFirestore(Movie currentMovie) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("Movies")
-                .document(currentMovie.getId())
-                .set(currentMovie);
-    }
-
-    private void getDetailsFromAPI(final String id, final View itemView) {
-
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Movie currentMovie = ApiRequest.getInstance().getMovieById(Integer.parseInt(id),
-                            getContext().getString(R.string.languageCodeForApı));
-                    //Upload movie to Firestore so we can fetch this movie firestore later.
-                    uploadMovieToFirestore(currentMovie);
-                    movieFetchSuccessfully(currentMovie, itemView);
-
-                } catch (IOException | JSONException e) {
-                    e.printStackTrace();
-                    dismissLoadingDialog();
-                    Snackbar.make(getActivity().findViewById(android.R.id.content),
-                            "Unable to fetch data from API!", Snackbar.LENGTH_SHORT).show();
-                }
-            }
-        });
-        thread.start();
-    }
-
-    private void movieFetchSuccessfully(Movie currentMovie, final View itemView) {
-        //Update Detailed movie at the Data Holder so we can access it from DetailsFragment
-        DataHolder.getInstance().setDetailedMovie(currentMovie);
-
-        //Load backdrop image with Picasso to cache
-        Picasso.get().load(currentMovie.getBackdropUrl()).fetch(new Callback() {
-            @Override
-            public void onSuccess() {
-                dismissLoadingDialog();
-            }
-
-            @Override
-            public void onError(Exception e) {
-                dismissLoadingDialog();
-            }
-        });
-        //In case if user returns, load everything from beginning.
-        currentRequestedPage = 0;
-        //ReplaceFragment
-        Fragment fragment = new MovieDetailsFragment();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            replaceFragmentWithExplodeAnimation(itemView, fragment);
-        } else {
-            replaceFragment(fragment);
-        }
-    }
-
+    @Override
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void replaceFragmentWithExplodeAnimation(View clickedView, final Fragment fragment) {
+    public void replaceFragmentWithExplodeAnimation(View clickedView, final Fragment fragment) {
         // save rect of view in screen coordinated
         final Rect viewRect = new Rect();
         clickedView.getGlobalVisibleRect(viewRect);
@@ -345,7 +228,8 @@ public class HomeFragment extends Fragment implements MovieClickListener {
         });
     }
 
-    private void replaceFragment(Fragment fragment) {
+    @Override
+    public void replaceFragment(Fragment fragment) {
         MainActivity mainActivity = (MainActivity) getContext();
 
         android.support.transition.Fade enteringFade = new android.support.transition.Fade();
@@ -365,4 +249,10 @@ public class HomeFragment extends Fragment implements MovieClickListener {
         actionBarTitle.setEllipsize(TextUtils.TruncateAt.END);
     }
 
+    @Override
+    public void showSnackBar(String message) {
+
+        Snackbar.make(getActivity().findViewById(android.R.id.content),
+                message, Snackbar.LENGTH_SHORT).show();
+    }
 }

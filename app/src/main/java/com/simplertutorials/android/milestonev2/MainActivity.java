@@ -1,68 +1,42 @@
 package com.simplertutorials.android.milestonev2;
 
 import android.os.Bundle;
-import android.support.transition.Fade;
-import android.support.transition.TransitionInflater;
-import android.support.transition.TransitionSet;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
-import com.simplertutorials.android.milestonev2.DataHolder.ApiRequest;
-import com.simplertutorials.android.milestonev2.DataHolder.DataHolder;
 import com.simplertutorials.android.milestonev2.ui.fragments.HomeFragment;
 import com.simplertutorials.android.milestonev2.ui.fragments.MovieDetailsFragment;
+import com.simplertutorials.android.milestonev2.ui.interfaces.MainActivtyMVP;
 
-import org.json.JSONException;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
-import java.net.MalformedURLException;
+public class MainActivity extends AppCompatActivity implements  MainActivtyMVP.View{
 
-public class MainActivity extends AppCompatActivity {
+    private MainActivityPresenter presenter;
+
+    @BindView(R.id.action_bar_title)
+    TextView actionBarTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        presenter = new MainActivityPresenter(this);
+        presenter.setUpFireStore();
+        presenter.fetchGenreList();
+
         setUpActionBar();
-        setUpFireStore();
-        fetchGenreList();
 
         changeFragment(R.id.content_main, new HomeFragment());
 
     }
 
-    private void fetchGenreList() {
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    DataHolder.getInstance().setGenreMap(ApiRequest.getInstance()
-                            .fetchGenreList(getString(R.string.languageCodeForApı)));
-                } catch (MalformedURLException | JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        thread.start();
-
-    }
-
-    private void setUpFireStore() {
-        // Enabling local data (Cache) for firestore to use data efficiently.
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setPersistenceEnabled(true)
-                .build();
-        db.setFirestoreSettings(settings);
-    }
 
     private void setUpActionBar() {
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
@@ -70,16 +44,8 @@ public class MainActivity extends AppCompatActivity {
 
         View view = getSupportActionBar().getCustomView();
 
-        TextView title = view.findViewById(R.id.action_bar_title);
-        title.setText(getString(R.string.popular_movies));
-        //Look here
-        ImageView logIcon = view.findViewById(R.id.action_bar_log_icon);
-        logIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-            }
-        });
+        ButterKnife.bind(this, view);
+        actionBarTitle.setText(getString(R.string.popular_movies));
     }
 
     public void changeFragment(int containerId, Fragment fragment) {
@@ -97,5 +63,10 @@ public class MainActivity extends AppCompatActivity {
             changeFragment(R.id.content_main, new HomeFragment());
         else
             super.onBackPressed();
+    }
+
+    @Override
+    public String getLanguageString() {
+        return getString(R.string.languageCodeForApı);
     }
 }

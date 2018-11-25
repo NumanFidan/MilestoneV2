@@ -35,17 +35,65 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MovieDetailsFragment extends Fragment {
 
     private Movie currentMovie;
-    private ImageView posterView, backdropImageView, adultContent, imdbIcon, imdbPage;
-    private TextView ratingTextView, title, tagLine, overview, seeOtherDetails,
-            budget, popularity, originalTitle, originalLanguage,
-            releaseDate, revenue, runTime, currentStatus, votes, companies;
-    private View otherDetailsLayout;
-    private LinearLayout genreLayout, companiesLayout;
+
+    @BindView(R.id.poster_moviedetail_imageView)
+    ImageView posterView;
+    @BindView(R.id.bacdropImage_detailsFragment_imageView)
+    ImageView backdropImageView;
+    @BindView(R.id.adultContent_detailsFragment_imageView)
+    ImageView adultContent;
+    @BindView(R.id.imdb_moviedetail_imageView)
+    ImageView imdbIcon;
+    @BindView(R.id.imdbPage_movieDetail_imageView)
+    ImageView imdbPage;
+
+    @BindView(R.id.rating_moviDetails_textView)
+    TextView ratingTextView;
+    @BindView(R.id.title_moviedetail_itemView)
+    TextView title;
+    @BindView(R.id.tagline_moviedetail_textView)
+    TextView tagLine;
+    @BindView(R.id.overview_moviedetail_textView)
+    TextView overview;
+    @BindView(R.id.otherDeails_moviedetail_textView)
+    TextView seeOtherDetails;
+    @BindView(R.id.budget_movieDetail_textView)
+    TextView budget;
+    @BindView(R.id.popularity_movieDetail_textView)
+    TextView popularity;
+    @BindView(R.id.originalTitle_movieDetail_textView)
+    TextView originalTitle;
+    @BindView(R.id.originalLanguage_movieDetail_textView)
+    TextView originalLanguage;
+    @BindView(R.id.releaseDate_movieDetail_textView)
+    TextView releaseDate;
+    @BindView(R.id.revenue_movieDetail_textView)
+    TextView revenue;
+    @BindView(R.id.runTime_movieDetail_textView)
+    TextView runTime;
+    @BindView(R.id.currentStatus_movieDetail_textView)
+    TextView currentStatus;
+    @BindView(R.id.votes_movieDetail_textView)
+    TextView votes;
+    @BindView(R.id.companies_movieDetail_textview)
+    TextView companies;
+
+    @BindView(R.id.otherDetails_movieDetail_layout)
+    View otherDetailsLayout;
+
+    @BindView(R.id.genres_moviedetail_layout)
+    LinearLayout genreLayout;
+    @BindView(R.id.companies_movieDetail_layout)
+    LinearLayout companiesLayout;
+
     private boolean showingAllDetails = false;
 
     public MovieDetailsFragment() {
@@ -67,13 +115,14 @@ public class MovieDetailsFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_movie_details, container, false);
 
-        init(view);
+        ButterKnife.bind(this, view);
+//        init(view);
         updateUI();
 
         return view;
     }
 
-    private void init(View view) {
+   /* private void init(View view) {
         posterView = view.findViewById(R.id.poster_moviedetail_imageView);
         backdropImageView = view.findViewById(R.id.bacdropImage_detailsFragment_imageView);
         ratingTextView = view.findViewById(R.id.rating_moviDetails_textView);
@@ -99,7 +148,7 @@ public class MovieDetailsFragment extends Fragment {
         runTime = view.findViewById(R.id.runTime_movieDetail_textView);
         currentStatus = view.findViewById(R.id.currentStatus_movieDetail_textView);
         votes = view.findViewById(R.id.votes_movieDetail_textView);
-    }
+    }*/
 
     @Override
     public void onDetach() {
@@ -121,7 +170,6 @@ public class MovieDetailsFragment extends Fragment {
         tagLine.setText(currentMovie.getTagLine());
         overview.setText(currentMovie.getOverview());
 
-        setImdbIconClick(imdbIcon);
         setGenres();
         updateAdultContentWarning();
         handleOtherDetails();
@@ -133,7 +181,7 @@ public class MovieDetailsFragment extends Fragment {
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.setMargins(0,0,24,0);
+        params.setMargins(0, 0, 24, 0);
         params.gravity = Gravity.CENTER;
 
         for (int i = 0; i < genreList.size(); i++) {
@@ -149,16 +197,12 @@ public class MovieDetailsFragment extends Fragment {
         }
     }
 
-    private void setImdbIconClick(View imdb) {
-        imdb.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String imdbUrl = "https://www.imdb.com/title/"+currentMovie.getImdbLink();
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(imdbUrl));
-                startActivity(intent);
-            }
-        });
+    @OnClick({R.id.imdb_moviedetail_imageView, R.id.imdbPage_movieDetail_imageView})
+    public void imdbIconClicked(View imdb) {
+        String imdbUrl = "https://www.imdb.com/title/" + currentMovie.getImdbLink();
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(imdbUrl));
+        startActivity(intent);
     }
 
     private void handleOtherDetails() {
@@ -190,22 +234,21 @@ public class MovieDetailsFragment extends Fragment {
                 getString(R.string.currency));
         popularity.setText(String.format(Locale.getDefault(), "%,d", currentMovie.getPopularity()));
         imdbPage.setImageResource(R.mipmap.ic_imdb);
-        setImdbIconClick(imdbPage);
         originalTitle.setText(currentMovie.getOriginalTitle());
         originalLanguage.setText(currentMovie.getOriginalLanguage());
         releaseDate.setText(currentMovie.getReleaseDate());
-        revenue.setText(String.format(Locale.getDefault(), "%,d",currentMovie.getRevenue()) +
+        revenue.setText(String.format(Locale.getDefault(), "%,d", currentMovie.getRevenue()) +
                 getString(R.string.currency));
-        runTime.setText(String.valueOf(currentMovie.getRunTime())+getString(R.string.minute));
+        runTime.setText(String.valueOf(currentMovie.getRunTime()) + getString(R.string.minute));
         currentStatus.setText(currentMovie.getStatus());
-        votes.setText(String.format(Locale.getDefault(), "%,d",currentMovie.getVoteCount()));
+        votes.setText(String.format(Locale.getDefault(), "%,d", currentMovie.getVoteCount()));
     }
 
     private void setCompanies() {
         ArrayList<Company> companyList = currentMovie.getCompanies();
         companiesLayout.removeAllViews();
 
-        if (companyList.size()>1)
+        if (companyList.size() > 1)
             companies.setText(getString(R.string.production_companies));
         else
             companies.setText(getString(R.string.production_company));
@@ -231,25 +274,25 @@ public class MovieDetailsFragment extends Fragment {
             adultContent.setImageResource(R.mipmap.family);
             adultContent.setBackgroundResource(R.drawable.primary_rounded_background);
         }
-        adultContent.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                final AlertDialog alertDialog = new AlertDialog.Builder(getContext()).create();
-                String message = currentMovie.isAdult() ? getString(R.string.this_film_contains_adult_contents) :
-                        getString(R.string.this_film_doesnt_contain_adult_contents);
-                alertDialog.setMessage(message);
-                alertDialog.setTitle(null);
-                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.ok),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                alertDialog.dismiss();
-                            }
-                        });
-                alertDialog.show();
+    }
 
-            }
-        });
+    @OnClick(R.id.adultContent_detailsFragment_imageView)
+    public void adultButtonClicked() {
+
+        final AlertDialog alertDialog = new AlertDialog.Builder(getContext()).create();
+        String message = currentMovie.isAdult() ? getString(R.string.this_film_contains_adult_contents) :
+                getString(R.string.this_film_doesnt_contain_adult_contents);
+        alertDialog.setMessage(message);
+        alertDialog.setTitle(null);
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.ok),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        alertDialog.dismiss();
+                    }
+                });
+        alertDialog.show();
+
     }
 
     private void loadWithPicasso(final ImageView into, final String url) {
@@ -261,7 +304,7 @@ public class MovieDetailsFragment extends Fragment {
                 .into(into, new Callback() {
                     @Override
                     public void onSuccess() {
-                        Log.w("Picasso", url+": Image loaded from cache");
+                        Log.w("Picasso", url + ": Image loaded from cache");
                     }
 
                     @Override
@@ -275,7 +318,7 @@ public class MovieDetailsFragment extends Fragment {
 
                                     @Override
                                     public void onError(Exception e) {
-                                        Log.w("Picasso", url+": couldn't download the image.");
+                                        Log.w("Picasso", url + ": couldn't download the image.");
                                     }
                                 });
                     }
@@ -283,7 +326,7 @@ public class MovieDetailsFragment extends Fragment {
     }
 
     private void setUpActionBar() {
-        MainActivity mainActivity = ((MainActivity)getActivity());
+        MainActivity mainActivity = ((MainActivity) getActivity());
         View actionBarRoot = mainActivity.getSupportActionBar().getCustomView();
         TextView actionBarTitle = actionBarRoot.findViewById(R.id.action_bar_title);
         actionBarTitle.setText(currentMovie.getTitle());
