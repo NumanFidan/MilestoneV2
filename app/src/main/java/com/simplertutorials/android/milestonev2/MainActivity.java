@@ -1,5 +1,6 @@
 package com.simplertutorials.android.milestonev2;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -10,12 +11,12 @@ import android.widget.TextView;
 
 import com.simplertutorials.android.milestonev2.ui.fragments.HomeFragment;
 import com.simplertutorials.android.milestonev2.ui.fragments.MovieDetailsFragment;
-import com.simplertutorials.android.milestonev2.ui.interfaces.MainActivtyMVP;
+import com.simplertutorials.android.milestonev2.ui.interfaces.MainActivityMVP;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity implements  MainActivtyMVP.View{
+public class MainActivity extends AppCompatActivity implements  MainActivityMVP.View{
 
     private MainActivityPresenter presenter;
 
@@ -28,11 +29,11 @@ public class MainActivity extends AppCompatActivity implements  MainActivtyMVP.V
         setContentView(R.layout.activity_main);
 
         presenter = new MainActivityPresenter(this);
-        presenter.setUpFireStore();
+//        presenter.setUpFireStore();
+        presenter.initializeRealm();
         presenter.fetchGenreList();
 
         setUpActionBar();
-
         changeFragment(R.id.content_main, new HomeFragment());
 
     }
@@ -68,5 +69,10 @@ public class MainActivity extends AppCompatActivity implements  MainActivtyMVP.V
     @Override
     public String getLanguageString() {
         return getString(R.string.languageCodeForApı);
+    }
+
+    @Override
+    public Context getContextFromMainActivity() {
+        return this;
     }
 }

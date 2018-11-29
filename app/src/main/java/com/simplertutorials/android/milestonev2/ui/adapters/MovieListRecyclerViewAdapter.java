@@ -15,10 +15,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.simplertutorials.android.milestonev2.DataHolder.DataHolder;
-import com.simplertutorials.android.milestonev2.ui.interfaces.MovieClickListener;
-import com.simplertutorials.android.milestonev2.domain.Movie;
+import com.simplertutorials.android.milestonev2.Data.Database.RealmService;
 import com.simplertutorials.android.milestonev2.R;
+import com.simplertutorials.android.milestonev2.domain.Genre;
+import com.simplertutorials.android.milestonev2.domain.PopularMovie;
+import com.simplertutorials.android.milestonev2.ui.interfaces.MovieClickListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -28,11 +29,11 @@ import butterknife.ButterKnife;
 
 public class MovieListRecyclerViewAdapter extends RecyclerView.Adapter<MovieListRecyclerViewAdapter.MovieListRecyclerViewHolder> {
 
-    private ArrayList<Movie> movieArrayList;
+    private ArrayList<PopularMovie> movieArrayList;
     private Context context;
     private MovieClickListener movieClickListener;
 
-    public MovieListRecyclerViewAdapter(Context context, ArrayList<Movie> movieArrayList,
+    public MovieListRecyclerViewAdapter(Context context, ArrayList<PopularMovie> movieArrayList,
                                         MovieClickListener movieClickListener) {
         this.context = context;
         this.movieArrayList = movieArrayList;
@@ -63,7 +64,7 @@ public class MovieListRecyclerViewAdapter extends RecyclerView.Adapter<MovieList
     }
 
     private void addGenres(LinearLayout genreLayout, int position) {
-        ArrayList<Integer> genreList = movieArrayList.get(position).getGenreIds();
+        ArrayList<String> genreList = (ArrayList<String>) movieArrayList.get(position).getGenreIds();
         genreLayout.removeAllViews();
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -71,9 +72,12 @@ public class MovieListRecyclerViewAdapter extends RecyclerView.Adapter<MovieList
         params.setMargins(10, 10, 10, 10);
         params.gravity = Gravity.CENTER;
 
+        Genre genreObj;
         for (int i = 0; i < genreList.size(); i++) {
+            genreObj = RealmService.getInstance().getGenreFromRealm(genreList.get(i));
+
             TextView genre = new TextView(context);
-            genre.setText(DataHolder.getInstance().getGenreMap().get(genreList.get(i)));
+            genre.setText(genreObj.getName());
             genre.setBackgroundResource(R.drawable.dark_rounded_background);
             genre.setTextColor(Color.WHITE);
             genre.setMaxLines(1);

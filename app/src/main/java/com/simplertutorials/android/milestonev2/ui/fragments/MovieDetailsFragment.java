@@ -20,27 +20,26 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.simplertutorials.android.milestonev2.DataHolder.DataHolder;
 import com.simplertutorials.android.milestonev2.MainActivity;
 import com.simplertutorials.android.milestonev2.R;
 import com.simplertutorials.android.milestonev2.domain.Company;
+import com.simplertutorials.android.milestonev2.domain.Genre;
 import com.simplertutorials.android.milestonev2.domain.Movie;
+import com.simplertutorials.android.milestonev2.ui.interfaces.MovieDetailsMVP;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.realm.Realm;
 
-public class MovieDetailsFragment extends Fragment {
+public class MovieDetailsFragment extends Fragment implements MovieDetailsMVP.View {
 
     private Movie currentMovie;
 
@@ -95,6 +94,7 @@ public class MovieDetailsFragment extends Fragment {
     LinearLayout companiesLayout;
 
     private boolean showingAllDetails = false;
+    private MovieDetailsPresenter presenter;
 
     public MovieDetailsFragment() {
         // Required empty public constructor
@@ -104,9 +104,12 @@ public class MovieDetailsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityCompat.postponeEnterTransition(getActivity());
-        currentMovie = DataHolder.getInstance().getDetailedMovie();
+        presenter = new MovieDetailsPresenter(this);
 
+        currentMovie = presenter.getCurrentMovie();
         setUpActionBar();
+
+        Log.w("------------","+"+Realm.getDefaultInstance().where(Genre.class).findAll());
     }
 
     @Override
@@ -116,39 +119,10 @@ public class MovieDetailsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_movie_details, container, false);
 
         ButterKnife.bind(this, view);
-//        init(view);
         updateUI();
 
         return view;
     }
-
-   /* private void init(View view) {
-        posterView = view.findViewById(R.id.poster_moviedetail_imageView);
-        backdropImageView = view.findViewById(R.id.bacdropImage_detailsFragment_imageView);
-        ratingTextView = view.findViewById(R.id.rating_moviDetails_textView);
-        genreLayout = view.findViewById(R.id.genres_moviedetail_layout);
-        title = view.findViewById(R.id.title_moviedetail_itemView);
-        tagLine = view.findViewById(R.id.tagline_moviedetail_textView);
-        adultContent = view.findViewById(R.id.adultContent_detailsFragment_imageView);
-        overview = view.findViewById(R.id.overview_moviedetail_textView);
-        seeOtherDetails = view.findViewById(R.id.otherDeails_moviedetail_textView);
-        otherDetailsLayout = view.findViewById(R.id.otherDetails_movieDetail_layout);
-        imdbIcon = view.findViewById(R.id.imdb_moviedetail_imageView);
-
-        //Details Part
-        companies = view.findViewById(R.id.companies_movieDetail_textview);
-        companiesLayout = view.findViewById(R.id.companies_movieDetail_layout);
-        budget = view.findViewById(R.id.budget_movieDetail_textView);
-        popularity = view.findViewById(R.id.popularity_movieDetail_textView);
-        imdbPage = view.findViewById(R.id.imdbPage_movieDetail_imageView);
-        originalTitle = view.findViewById(R.id.originalTitle_movieDetail_textView);
-        originalLanguage = view.findViewById(R.id.originalLanguage_movieDetail_textView);
-        releaseDate = view.findViewById(R.id.releaseDate_movieDetail_textView);
-        revenue = view.findViewById(R.id.revenue_movieDetail_textView);
-        runTime = view.findViewById(R.id.runTime_movieDetail_textView);
-        currentStatus = view.findViewById(R.id.currentStatus_movieDetail_textView);
-        votes = view.findViewById(R.id.votes_movieDetail_textView);
-    }*/
 
     @Override
     public void onDetach() {
@@ -162,12 +136,12 @@ public class MovieDetailsFragment extends Fragment {
     }
 
     private void updateUI() {
-        loadWithPicasso(posterView, currentMovie.getPosterUrl());
-        loadWithPicasso(backdropImageView, currentMovie.getBackdropUrl());
+        loadWithPicasso(posterView, currentMovie.getPosterPath());
+        loadWithPicasso(backdropImageView, currentMovie.getBackdropPath());
 
         ratingTextView.setText(String.valueOf(currentMovie.getVoteAverage()));
         title.setText(currentMovie.getTitle());
-        tagLine.setText(currentMovie.getTagLine());
+        tagLine.setText(currentMovie.getTagline());
         overview.setText(currentMovie.getOverview());
 
         setGenres();
@@ -176,17 +150,20 @@ public class MovieDetailsFragment extends Fragment {
     }
 
     private void setGenres() {
-        ArrayList<Integer> genreList = currentMovie.getGenreIds();
+        List<Genre> genreList = currentMovie.getGenres();
         genreLayout.removeAllViews();
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         params.setMargins(0, 0, 24, 0);
         params.gravity = Gravity.CENTER;
-
+        Genre genreObj;
         for (int i = 0; i < genreList.size(); i++) {
+
+            genreObj = presenter.getGenreFromRealm(genreList.get(i).getId());
+
             TextView genre = new TextView(getContext());
-            genre.setText(DataHolder.getInstance().getGenreMap().get(genreList.get(i)));
+            genre.setText(genreObj.getName());
             genre.setBackgroundResource(R.drawable.dark_rounded_background);
             genre.setTextColor(Color.WHITE);
             genre.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
@@ -199,7 +176,7 @@ public class MovieDetailsFragment extends Fragment {
 
     @OnClick({R.id.imdb_moviedetail_imageView, R.id.imdbPage_movieDetail_imageView})
     public void imdbIconClicked(View imdb) {
-        String imdbUrl = "https://www.imdb.com/title/" + currentMovie.getImdbLink();
+        String imdbUrl = "https://www.imdb.com/title/" + currentMovie.getImdbId();
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(imdbUrl));
         startActivity(intent);
@@ -232,20 +209,20 @@ public class MovieDetailsFragment extends Fragment {
         setCompanies();
         budget.setText(String.format(Locale.getDefault(), "%,d", currentMovie.getBudget()) +
                 getString(R.string.currency));
-        popularity.setText(String.format(Locale.getDefault(), "%,d", currentMovie.getPopularity()));
+        popularity.setText(currentMovie.getPopularity());
         imdbPage.setImageResource(R.mipmap.ic_imdb);
         originalTitle.setText(currentMovie.getOriginalTitle());
         originalLanguage.setText(currentMovie.getOriginalLanguage());
         releaseDate.setText(currentMovie.getReleaseDate());
         revenue.setText(String.format(Locale.getDefault(), "%,d", currentMovie.getRevenue()) +
                 getString(R.string.currency));
-        runTime.setText(String.valueOf(currentMovie.getRunTime()) + getString(R.string.minute));
+        runTime.setText(String.valueOf(currentMovie.getRuntime()) + getString(R.string.minute));
         currentStatus.setText(currentMovie.getStatus());
         votes.setText(String.format(Locale.getDefault(), "%,d", currentMovie.getVoteCount()));
     }
 
     private void setCompanies() {
-        ArrayList<Company> companyList = currentMovie.getCompanies();
+        List<Company> companyList = currentMovie.getProductionCompanies();
         companiesLayout.removeAllViews();
 
         if (companyList.size() > 1)
@@ -259,15 +236,14 @@ public class MovieDetailsFragment extends Fragment {
             View view = inflater.inflate(R.layout.item_company, companiesLayout, false);
             TextView companyName = view.findViewById(R.id.companyName_companyItem);
             CircleImageView logo = view.findViewById(R.id.company_logo);
-            companyName.setText(currentMovie.getCompanies().get(i).getName());
-            Picasso.get().load(currentMovie.getCompanies().get(i).getLogoUrl())
-                    .into(logo);
+            companyName.setText(currentMovie.getProductionCompanies().get(i).getName());
+            loadWithPicasso(logo, currentMovie.getProductionCompanies().get(i).getLogoPath());
             companiesLayout.addView(view);
         }
     }
 
     private void updateAdultContentWarning() {
-        if (currentMovie.isAdult()) {
+        if (currentMovie.getAdult()) {
             adultContent.setImageResource(R.mipmap.adult);
             adultContent.setBackgroundResource(R.drawable.red_rounded_background);
         } else {
@@ -279,9 +255,13 @@ public class MovieDetailsFragment extends Fragment {
     @OnClick(R.id.adultContent_detailsFragment_imageView)
     public void adultButtonClicked() {
 
-        final AlertDialog alertDialog = new AlertDialog.Builder(getContext()).create();
-        String message = currentMovie.isAdult() ? getString(R.string.this_film_contains_adult_contents) :
+        String message = currentMovie.getAdult() ? getString(R.string.this_film_contains_adult_contents) :
                 getString(R.string.this_film_doesnt_contain_adult_contents);
+        showAlertDialog(message);
+    }
+
+    private void showAlertDialog(String message) {
+        final AlertDialog alertDialog = new AlertDialog.Builder(getContext()).create();
         alertDialog.setMessage(message);
         alertDialog.setTitle(null);
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.ok),
@@ -296,6 +276,9 @@ public class MovieDetailsFragment extends Fragment {
     }
 
     private void loadWithPicasso(final ImageView into, final String url) {
+        //if url is empty that means we don't have the url simply return.
+        if (url.equalsIgnoreCase(""))
+            return;
         //We will try to fetch offline data if it is possible.
         //If no we will fetch it from URL
         Picasso.get()

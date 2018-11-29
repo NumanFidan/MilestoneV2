@@ -1,52 +1,56 @@
 package com.simplertutorials.android.milestonev2.domain;
 
-import com.simplertutorials.android.milestonev2.DataHolder.DataHolder;
+import com.google.gson.annotations.SerializedName;
+import com.simplertutorials.android.milestonev2.Data.DataHolder;
 
-public class Company {
-    private int id;
-    private String logoUrl, name, country;
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
+public class Company extends RealmObject {
+    @PrimaryKey
+    @SerializedName("id")
+    public Integer id;
+
+    @SerializedName("logo_path")
+    private String logoPath;
+
+    @SerializedName("name")
+    public String name;
+
+    @SerializedName("origin_country")
+    private String originCountry;
 
     public Company() {
         //This empty constructor is requested for FireStore
     }
 
-    public Company(int id) {
-        setId(id);
+    public Company(Integer id, String logoPath, String name, String originCountry) {
+        this.id = id;
+        this.logoPath = logoPath;
+        this.name = name;
+        this.originCountry = originCountry;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getLogoPath() {
+        if (logoPath == null)
+            return "";
 
-    public String getLogoUrl() {
-        return logoUrl;
-    }
-
-    public void setLogoUrl(String logoUrl) {
         //Here, we are checking if url is full url or are we need to add base url
-        if (logoUrl.contains("http"))
-            this.logoUrl = logoUrl;
+        if (logoPath.contains("http"))
+            return logoPath;
         else
-            this.logoUrl = DataHolder.getInstance().getApiBaseImageUrl()+logoUrl;
+            return DataHolder.getInstance().getApiBaseImageUrl()+logoPath;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
+    public String getOriginCountry() {
+        return originCountry;
     }
 }

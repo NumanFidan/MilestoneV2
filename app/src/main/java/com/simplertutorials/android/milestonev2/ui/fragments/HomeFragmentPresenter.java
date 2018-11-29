@@ -1,118 +1,125 @@
 package com.simplertutorials.android.milestonev2.ui.fragments;
 
 import android.os.Build;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.View;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Source;
-import com.simplertutorials.android.milestonev2.DataHolder.ApiRequest;
-import com.simplertutorials.android.milestonev2.DataHolder.DataHolder;
+import com.simplertutorials.android.milestonev2.Data.Api.ApiClient;
+import com.simplertutorials.android.milestonev2.Data.Api.ApiService;
+import com.simplertutorials.android.milestonev2.Data.DataHolder;
+import com.simplertutorials.android.milestonev2.Data.Database.RealmService;
 import com.simplertutorials.android.milestonev2.domain.Movie;
+import com.simplertutorials.android.milestonev2.domain.PopularMovie;
+import com.simplertutorials.android.milestonev2.domain.PopularMoviesResponse;
 import com.simplertutorials.android.milestonev2.ui.interfaces.HomeFragmentMVP;
-import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.ArrayList;
+
+import io.realm.Realm;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeFragmentPresenter implements HomeFragmentMVP.Presenter {
 
     private final HomeFragmentMVP.View view;
-    private int currentRequestedPage =0;
+    private int currentRequestedPage = 0;
+    private ApiService apiService;
 
-    public HomeFragmentPresenter(HomeFragmentMVP.View view) {
+    HomeFragmentPresenter(HomeFragmentMVP.View view) {
         this.view = view;
     }
 
-
     @Override
-    public void loadNextPage( final ArrayList<Movie> movieArrayList) {
+    public void loadNextPage(ArrayList<PopularMovie> movieArrayList) {
         currentRequestedPage++;
-        if (!(ApiRequest.getInstance().getNumberOfAvailablePage() >= currentRequestedPage))
-            return;
+
+        if (apiService == null)
+            initializeApiService();
+
+        getPopularMoviesFromApiService(movieArrayList);
+/*
+        //If genres not fetched correctly on MainActivity then we will collect it here
+        Realm realm = Realm.getDefaultInstance();
+        if (realm.where(Genre.class).findFirst() == null) {
+            Log.w("RealmHomeFragment", "Local Genre database was empty, fetching" +
+                    "data from Apı Server");
+            getGenresFromApiService();
+
+        }*/
+    }
+
+    private void getPopularMoviesFromApiService(ArrayList<PopularMovie> movieArrayList) {
+        Call<PopularMoviesResponse> call = apiService.getPopularMovies(DataHolder.getInstance().getApiKey(),
+                view.getLanguageString(),
+                currentRequestedPage);
+
         view.showProgressDialogToUser("Loading Movies...");
 
-        Thread thread = new Thread(new Runnable() {
+        call.enqueue(new retrofit2.Callback<PopularMoviesResponse>() {
             @Override
-            public void run() {
-                try {
-                    movieArrayList.addAll(ApiRequest.getInstance()
-                            .requestPopularMovies(currentRequestedPage,
-                                    view.getLanguageString()));
-                    //If genres not fetched correctly on MainActivity then we will collect it here
-                    if (DataHolder.getInstance().getGenreMap().size() < 1) {
-                        Log.w("DataHolderHomeFragment", "DataHolder was empty, fetching" +
-                                "data from Apı Server");
-                        DataHolder.getInstance().setGenreMap(ApiRequest.getInstance()
-                                .fetchGenreList(view.getLanguageString()));
-                    }
+            public void onResponse(Call<PopularMoviesResponse> call, Response<PopularMoviesResponse> response) {
+                if (response.body().getTotalPages() < currentRequestedPage)
+                    return;
+                movieArrayList.addAll(response.body().getPopularMovies());
+                view.dataChangedRecyclerViewHandler();
 
-                    view.dataChangedRecyclerViewHandler();
+            }
 
-                } catch (IOException | JSONException e) {
-                    e.printStackTrace();
-                    currentRequestedPage--;
-                    view.dismissLoadingDialog();
-                    view.connectionErrorHandler();
+            @Override
+            public void onFailure(Call<PopularMoviesResponse> call, Throwable t) {
+                currentRequestedPage--;
+                view.dismissLoadingDialog();
+                view.connectionErrorHandler();
+            }
+
+        });
+    }
+/*
+    private void getGenresFromApiService() {
+        Call<GenresResponse> genresResponseCall = apiService.fetchGenres(DataHolder.getInstance().getApiKey(),
+                view.getLanguageString());
+        genresResponseCall.enqueue(new Callback<GenresResponse>() {
+            @Override
+            public void onResponse(Call<GenresResponse> call, Response<GenresResponse> response) {
+
+                //Saving all genre data to ArrayList in DataHolder for further usages
+
+                if (response.body() != null) {
+                    for (int j = 0; j < response.body().getGenreList().size(); j++)
+                        RealmService.getInstance().writeGenreToRealm(response.body().getGenreList().get(j));
                 }
             }
+
+            @Override
+            public void onFailure(Call<GenresResponse> call, Throwable t) {
+
+            }
         });
-        thread.start();
+    }*/
+
+    private void initializeApiService() {
+        apiService = ApiClient.getClient().create(ApiService.class);
     }
 
     @Override
-    public void getDetailsOfMovie(final String id, Source source, final boolean tryFirestoreServer, final boolean tryAPI, final View clickedItemView) {
-        // We will going to try to fetch data from Firestore cache
-        // If we could not find we will try Firestore Server
-        // If we could nor find again, we will try API request.
+    public void getDetailsOfMovie(final String id,final View clickedItemView) {
+        // We will going to try to fetch data from Realm
+        // If we could not find, we will try API request.
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        db.collection("Movies")
-                .document(id)
-                .get(source)
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        if (documentSnapshot.exists()) {
-                            Movie currentMovie = documentSnapshot.toObject(Movie.class);
-                            movieFetchSuccessfully(currentMovie, clickedItemView);
+        Movie currentMovie = RealmService.getInstance().getMovieFromRealm(id);
 
-                            Log.w("Firestore", currentMovie.getTitle() + ": Movie fetched from firestore isCache?"
-                                            + tryFirestoreServer);
-                        } else {
-                            //This means we could not find data on Cache
-                            //We could not found it on Server
-                            getDetailsFromAPI(id, clickedItemView);
-                        }
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        if (tryFirestoreServer)
-                            getDetailsOfMovie(id, Source.SERVER, false,
-                                    true, clickedItemView);
-                        else if (tryAPI)
-                            getDetailsFromAPI(id, clickedItemView);
-                    }
-                });
-    }
+        if (currentMovie != null) {
+            Log.w("Realm Baby------------", "-------------------" + currentMovie.toString());
+            movieFetchSuccessfully(currentMovie, clickedItemView);
+            view.showSnackBar("This movie fetched from local database.");
+        } else {
+            getDetailsFromAPI(id, clickedItemView);
+        }
 
-    @Override
-    public void uploadMovieToFirestore(Movie currentMovie) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("Movies")
-                .document(currentMovie.getId())
-                .set(currentMovie);
     }
 
     @Override
@@ -121,7 +128,7 @@ public class HomeFragmentPresenter implements HomeFragmentMVP.Presenter {
         DataHolder.getInstance().setDetailedMovie(currentMovie);
 
         //Load backdrop image with Picasso to cache
-        Picasso.get().load(currentMovie.getBackdropUrl()).fetch(new Callback() {
+        Picasso.get().load(currentMovie.getBackdropPath()).fetch(new com.squareup.picasso.Callback() {
             @Override
             public void onSuccess() {
                 view.dismissLoadingDialog();
@@ -134,6 +141,7 @@ public class HomeFragmentPresenter implements HomeFragmentMVP.Presenter {
         });
         //In case if user returns, load everything from beginning.
         currentRequestedPage = 0;
+
         //ReplaceFragment
         Fragment fragment = new MovieDetailsFragment();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -143,26 +151,53 @@ public class HomeFragmentPresenter implements HomeFragmentMVP.Presenter {
         }
     }
 
+    private void writeMovieToRealm(Movie currentMovie, View itemView) {
+
+        Realm realm = Realm.getDefaultInstance();
+        realm.executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                realm.copyToRealm(currentMovie);
+            }
+        }, new Realm.Transaction.OnSuccess() {
+            @Override
+            public void onSuccess() {
+                Log.w("Realm----------------", "Uploaded to Realm Succesfully" + currentMovie);
+                movieFetchSuccessfully(currentMovie, itemView);
+            }
+
+        }, new Realm.Transaction.OnError() {
+            @Override
+            public void onError(Throwable error) {
+                Log.w("Realm----------------", error.getMessage());
+                view.showSnackBar("Couldn't save data to local database.");
+                movieFetchSuccessfully(currentMovie, itemView);
+            }
+        });
+
+    }
+
     @Override
     public void getDetailsFromAPI(final String id, final View itemView) {
 
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Movie currentMovie = ApiRequest.getInstance().getMovieById(Integer.parseInt(id),
-                            view.getLanguageString());
-                    //Upload movie to Firestore so we can fetch this movie firestore later.
-                    uploadMovieToFirestore(currentMovie);
-                    movieFetchSuccessfully(currentMovie, itemView);
+        Call<Movie> movieCall = apiService.getMovieDetails(id,
+                DataHolder.getInstance().getApiKey(),
+                view.getLanguageString());
 
-                } catch (IOException | JSONException e) {
-                    e.printStackTrace();
-                    view.dismissLoadingDialog();
-                    view.showSnackBar("Unable to fetch data from API!");
-                }
+        movieCall.enqueue(new Callback<Movie>() {
+            @Override
+            public void onResponse(Call<Movie> call, Response<Movie> response) {
+
+                writeMovieToRealm(response.body(), itemView);
+            }
+
+            @Override
+            public void onFailure(Call<Movie> call, Throwable t) {
+                Log.w("FailedToGetMovieDetails", "Movie Details couldn't fetched from API"
+                        + t.getMessage());
+                view.dismissLoadingDialog();
+                view.showSnackBar("Unable to fetch data from API!");
             }
         });
-        thread.start();
     }
 }

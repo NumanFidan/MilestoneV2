@@ -21,13 +21,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.firebase.firestore.Source;
 import com.simplertutorials.android.milestonev2.MainActivity;
 import com.simplertutorials.android.milestonev2.R;
+import com.simplertutorials.android.milestonev2.domain.PopularMovie;
 import com.simplertutorials.android.milestonev2.ui.adapters.MovieListRecyclerViewAdapter;
 import com.simplertutorials.android.milestonev2.ui.interfaces.HomeFragmentMVP;
 import com.simplertutorials.android.milestonev2.ui.interfaces.MovieClickListener;
-import com.simplertutorials.android.milestonev2.domain.Movie;
 import com.transitionseverywhere.Explode;
 import com.transitionseverywhere.Fade;
 import com.transitionseverywhere.Transition;
@@ -43,7 +42,7 @@ public class HomeFragment extends Fragment implements MovieClickListener, HomeFr
 
     private static final int NOTIFY_ADAPTER_DATA_CHANGE = 100;
     private static final int NOTIFY_CONNECTION_ERROR = 101;
-    private ArrayList<Movie> movieArrayList;
+    private ArrayList<PopularMovie> movieArrayList;
     private MovieListRecyclerViewAdapter adapter;
 
     @BindView(R.id.movieListRecyclerView)
@@ -62,6 +61,7 @@ public class HomeFragment extends Fragment implements MovieClickListener, HomeFr
         super.onCreate(savedInstanceState);
         presenter = new HomeFragmentPresenter(this);
 
+        setUpHandler();
         setUpActionBar();
     }
 
@@ -120,7 +120,7 @@ public class HomeFragment extends Fragment implements MovieClickListener, HomeFr
     @Override
     public void connectionErrorHandler() {
         Message handlerMessage = new Message();
-        handlerMessage.what = NOTIFY_ADAPTER_DATA_CHANGE;
+        handlerMessage.what = NOTIFY_CONNECTION_ERROR;
         updateHandler.sendMessage(handlerMessage);
     }
 
@@ -161,11 +161,14 @@ public class HomeFragment extends Fragment implements MovieClickListener, HomeFr
         movieLoadingDialog.dismiss();
     }
 
-    @SuppressLint("HandlerLeak")
     @Override
     public void onResume() {
         super.onResume();
+        setUpHandler();
+    }
 
+    @SuppressLint("HandlerLeak")
+    private void setUpHandler() {
         updateHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -186,10 +189,10 @@ public class HomeFragment extends Fragment implements MovieClickListener, HomeFr
     }
 
     @Override
-    public void onMovieItemClick(Movie movie, View itemView) {
+    public void onMovieItemClick(PopularMovie movie, View itemView) {
         showProgressDialogToUser("Getting Movie From Server");
 
-        presenter.getDetailsOfMovie(movie.getId(), Source.CACHE, true, true, itemView);
+        presenter.getDetailsOfMovie(movie.getId(), itemView);
     }
 
     @Override

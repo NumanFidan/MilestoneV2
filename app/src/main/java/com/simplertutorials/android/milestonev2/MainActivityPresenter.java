@@ -1,43 +1,74 @@
 package com.simplertutorials.android.milestonev2;
 
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
-import com.simplertutorials.android.milestonev2.DataHolder.ApiRequest;
-import com.simplertutorials.android.milestonev2.DataHolder.DataHolder;
-import com.simplertutorials.android.milestonev2.ui.interfaces.MainActivtyMVP;
+import com.simplertutorials.android.milestonev2.Data.Api.ApiClient;
+import com.simplertutorials.android.milestonev2.Data.Api.ApiService;
+import com.simplertutorials.android.milestonev2.Data.DataHolder;
+import com.simplertutorials.android.milestonev2.Data.Database.RealmService;
+import com.simplertutorials.android.milestonev2.domain.Genre;
+import com.simplertutorials.android.milestonev2.domain.GenresResponse;
+import com.simplertutorials.android.milestonev2.ui.interfaces.MainActivityMVP;
 
-import org.json.JSONException;
+import io.realm.Realm;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
-import java.net.MalformedURLException;
+public class MainActivityPresenter implements MainActivityMVP.Presenter {
 
-public class MainActivityPresenter implements MainActivtyMVP.Presenter{
+    private final MainActivityMVP.View view;
+    private boolean realmInitialized = false;
 
-    private final MainActivtyMVP.View view;
-
-    public MainActivityPresenter(MainActivtyMVP.View view) {
+    public MainActivityPresenter(MainActivityMVP.View view) {
         this.view = view;
     }
 
-    public void setUpFireStore() {
-        // Enabling local data (Cache) for firestore to use data efficiently.
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setPersistenceEnabled(true)
-                .build();
-        db.setFirestoreSettings(settings);
+    public void initializeRealm(){
+        Realm.init(view.getContextFromMainActivity());
+        realmInitialized = true;
     }
 
     public void fetchGenreList() {
-        Thread thread = new Thread(() -> {
-            try {
-                DataHolder.getInstance().setGenreMap(ApiRequest.getInstance()
-                        .fetchGenreList(view.getLanguageString()));
-            } catch (MalformedURLException | JSONException e) {
-                e.printStackTrace();
+        if (!realmInitialized)
+            initializeRealm();
+
+        Realm realm = Realm.getDefaultInstance();
+
+        Genre genre = realm.where(Genre.class).findFirst();
+
+        if (genre == null)
+            fetchGenreListFromApi();
+
+    }
+
+    private void fetchGenreListFromApi() {
+
+        ApiService apiService = ApiClient.getClient().create(ApiService.class);
+
+        Call<GenresResponse> genresResponseCall = apiService.fetchGenres(
+                DataHolder.getInstance().getApiKey(),
+                view.getLanguageString());
+
+        genresResponseCall.enqueue(new Callback<GenresResponse>() {
+            @Override
+            public void onResponse(Call<GenresResponse> call, Response<GenresResponse> response) {
+
+                //Saving all genre data to ArrayList in DataHolder for further usages
+
+                if (response.body() != null)
+                    for (int i=0; i<response.body().getGenreList().size();i++)
+                        writeGenreToRealm(response.body().getGenreList().get(i));
+
+            }
+
+            @Override
+            public void onFailure(Call<GenresResponse> call, Throwable t) {
+
             }
         });
-        thread.start();
 
+    }
+
+    private void writeGenreToRealm(Genre genre) {
+        RealmService.getInstance().writeGenreToRealm(genre);
     }
 }
