@@ -1,4 +1,4 @@
-package com.simplertutorials.android.milestonev2.Data.Database;
+package com.simplertutorials.android.milestonev2.data.database;
 
 import android.util.Log;
 

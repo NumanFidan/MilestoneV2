@@ -15,7 +15,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.simplertutorials.android.milestonev2.Data.Database.RealmService;
+import com.simplertutorials.android.milestonev2.data.database.RealmService;
 import com.simplertutorials.android.milestonev2.R;
 import com.simplertutorials.android.milestonev2.domain.Genre;
 import com.simplertutorials.android.milestonev2.domain.PopularMovie;

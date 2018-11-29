@@ -1,4 +1,4 @@
-package com.simplertutorials.android.milestonev2.Data;
+package com.simplertutorials.android.milestonev2.data;
 
 import com.simplertutorials.android.milestonev2.domain.Movie;
 

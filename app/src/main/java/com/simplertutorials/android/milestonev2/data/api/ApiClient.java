@@ -1,4 +1,4 @@
-package com.simplertutorials.android.milestonev2.Data.Api;
+package com.simplertutorials.android.milestonev2.data.api;
 
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;

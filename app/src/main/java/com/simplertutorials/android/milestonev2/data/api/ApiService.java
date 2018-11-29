@@ -1,4 +1,4 @@
-package com.simplertutorials.android.milestonev2.Data.Api;
+package com.simplertutorials.android.milestonev2.data.api;
 
 import com.simplertutorials.android.milestonev2.domain.GenresResponse;
 import com.simplertutorials.android.milestonev2.domain.Movie;

@@ -5,10 +5,10 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.View;
 
-import com.simplertutorials.android.milestonev2.Data.Api.ApiClient;
-import com.simplertutorials.android.milestonev2.Data.Api.ApiService;
-import com.simplertutorials.android.milestonev2.Data.DataHolder;
-import com.simplertutorials.android.milestonev2.Data.Database.RealmService;
+import com.simplertutorials.android.milestonev2.data.api.ApiClient;
+import com.simplertutorials.android.milestonev2.data.api.ApiService;
+import com.simplertutorials.android.milestonev2.data.DataHolder;
+import com.simplertutorials.android.milestonev2.data.database.RealmService;
 import com.simplertutorials.android.milestonev2.domain.Movie;
 import com.simplertutorials.android.milestonev2.domain.PopularMovie;
 import com.simplertutorials.android.milestonev2.domain.PopularMoviesResponse;

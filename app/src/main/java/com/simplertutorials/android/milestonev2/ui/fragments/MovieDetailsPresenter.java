@@ -1,7 +1,7 @@
 package com.simplertutorials.android.milestonev2.ui.fragments;
 
-import com.simplertutorials.android.milestonev2.Data.DataHolder;
-import com.simplertutorials.android.milestonev2.Data.Database.RealmService;
+import com.simplertutorials.android.milestonev2.data.DataHolder;
+import com.simplertutorials.android.milestonev2.data.database.RealmService;
 import com.simplertutorials.android.milestonev2.domain.Genre;
 import com.simplertutorials.android.milestonev2.domain.Movie;
 import com.simplertutorials.android.milestonev2.ui.interfaces.MovieDetailsMVP;

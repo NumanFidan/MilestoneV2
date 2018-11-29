@@ -1,7 +1,7 @@
 package com.simplertutorials.android.milestonev2.domain;
 
 import com.google.gson.annotations.SerializedName;
-import com.simplertutorials.android.milestonev2.Data.DataHolder;
+import com.simplertutorials.android.milestonev2.data.DataHolder;
 
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
