@@ -29,7 +29,6 @@ public class MainActivity extends AppCompatActivity implements  MainActivityMVP.
         setContentView(R.layout.activity_main);
 
         presenter = new MainActivityPresenter(this);
-//        presenter.setUpFireStore();
         presenter.initializeRealm();
         presenter.fetchGenreList();
 

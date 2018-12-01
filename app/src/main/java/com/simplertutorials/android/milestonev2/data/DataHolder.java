@@ -7,7 +7,6 @@ public class DataHolder {
     private static DataHolder instance = new DataHolder();
     private final String apiKey= "6947b6102ef7af19f5aee4b5a566ecbc";
     private final String apiBaseImageUrl = "http://image.tmdb.org/t/p/w342";
-    private final String apiBaseMoviesUrl = "https://api.themoviedb.org/3/movie";
     private Movie detailedMovie = null;
 
     private DataHolder() {
@@ -24,10 +23,6 @@ public class DataHolder {
 
     public String getApiBaseImageUrl() {
         return apiBaseImageUrl;
-    }
-
-    public String getApiBaseMoviesUrl() {
-        return apiBaseMoviesUrl;
     }
 
     public Movie getDetailedMovie() {

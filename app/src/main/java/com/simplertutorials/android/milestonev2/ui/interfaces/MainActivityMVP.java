@@ -9,7 +9,6 @@ public interface MainActivityMVP {
     }
 
     interface Presenter{
-//        void setUpFireStore();
         void initializeRealm();
         void fetchGenreList();
     }

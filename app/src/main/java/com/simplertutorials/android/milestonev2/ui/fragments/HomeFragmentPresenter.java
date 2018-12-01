@@ -40,15 +40,6 @@ public class HomeFragmentPresenter implements HomeFragmentMVP.Presenter {
             initializeApiService();
 
         getPopularMoviesFromApiService(movieArrayList);
-/*
-        //If genres not fetched correctly on MainActivity then we will collect it here
-        Realm realm = Realm.getDefaultInstance();
-        if (realm.where(Genre.class).findFirst() == null) {
-            Log.w("RealmHomeFragment", "Local Genre database was empty, fetching" +
-                    "data from Apı Server");
-            getGenresFromApiService();
-
-        }*/
     }
 
     private void getPopularMoviesFromApiService(ArrayList<PopularMovie> movieArrayList) {
@@ -77,28 +68,6 @@ public class HomeFragmentPresenter implements HomeFragmentMVP.Presenter {
 
         });
     }
-/*
-    private void getGenresFromApiService() {
-        Call<GenresResponse> genresResponseCall = apiService.fetchGenres(DataHolder.getInstance().getApiKey(),
-                view.getLanguageString());
-        genresResponseCall.enqueue(new Callback<GenresResponse>() {
-            @Override
-            public void onResponse(Call<GenresResponse> call, Response<GenresResponse> response) {
-
-                //Saving all genre data to ArrayList in DataHolder for further usages
-
-                if (response.body() != null) {
-                    for (int j = 0; j < response.body().getGenreList().size(); j++)
-                        RealmService.getInstance().writeGenreToRealm(response.body().getGenreList().get(j));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<GenresResponse> call, Throwable t) {
-
-            }
-        });
-    }*/
 
     private void initializeApiService() {
         apiService = ApiClient.getClient().create(ApiService.class);
@@ -108,7 +77,6 @@ public class HomeFragmentPresenter implements HomeFragmentMVP.Presenter {
     public void getDetailsOfMovie(final String id,final View clickedItemView) {
         // We will going to try to fetch data from Realm
         // If we could not find, we will try API request.
-
 
         Movie currentMovie = RealmService.getInstance().getMovieFromRealm(id);
 
