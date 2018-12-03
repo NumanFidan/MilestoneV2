@@ -5,9 +5,9 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.View;
 
+import com.simplertutorials.android.milestonev2.data.DataHolder;
 import com.simplertutorials.android.milestonev2.data.api.ApiClient;
 import com.simplertutorials.android.milestonev2.data.api.ApiService;
-import com.simplertutorials.android.milestonev2.data.DataHolder;
 import com.simplertutorials.android.milestonev2.data.database.RealmService;
 import com.simplertutorials.android.milestonev2.domain.Movie;
 import com.simplertutorials.android.milestonev2.domain.PopularMovie;
@@ -17,6 +17,10 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -43,6 +47,47 @@ public class HomeFragmentPresenter implements HomeFragmentMVP.Presenter {
     }
 
     private void getPopularMoviesFromApiService(ArrayList<PopularMovie> movieArrayList) {
+
+        view.showProgressDialogToUser("Loading Movies...");
+//        Observable<PopularMoviesResponse> observable =
+                apiService
+                //Observable
+                .getPopularMovies(DataHolder.getInstance().getApiKey(),
+                view.getLanguageString(),
+                currentRequestedPage)
+                //Scheduler
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                //Observer
+                .subscribe(new Observer<PopularMoviesResponse>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(PopularMoviesResponse popularMoviesResponse) {
+                        if (popularMoviesResponse.getTotalPages() < currentRequestedPage)
+                            return;
+                        movieArrayList.addAll(popularMoviesResponse.getPopularMovies());
+                        view.dataChangedRecyclerViewHandler();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        currentRequestedPage--;
+                        view.dismissLoadingDialog();
+                        view.connectionErrorHandler();
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+/*
+
+
         Call<PopularMoviesResponse> call = apiService.getPopularMovies(DataHolder.getInstance().getApiKey(),
                 view.getLanguageString(),
                 currentRequestedPage);
@@ -66,7 +111,7 @@ public class HomeFragmentPresenter implements HomeFragmentMVP.Presenter {
                 view.connectionErrorHandler();
             }
 
-        });
+        });*/
     }
 
     private void initializeApiService() {
@@ -74,7 +119,7 @@ public class HomeFragmentPresenter implements HomeFragmentMVP.Presenter {
     }
 
     @Override
-    public void getDetailsOfMovie(final String id,final View clickedItemView) {
+    public void getDetailsOfMovie(final String id, final View clickedItemView) {
         // We will going to try to fetch data from Realm
         // If we could not find, we will try API request.
 

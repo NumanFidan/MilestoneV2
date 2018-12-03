@@ -37,7 +37,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import de.hdodenhof.circleimageview.CircleImageView;
-import io.realm.Realm;
 
 public class MovieDetailsFragment extends Fragment implements MovieDetailsMVP.View {
 
@@ -108,8 +107,6 @@ public class MovieDetailsFragment extends Fragment implements MovieDetailsMVP.Vi
 
         currentMovie = presenter.getCurrentMovie();
         setUpActionBar();
-
-        Log.w("------------","+"+Realm.getDefaultInstance().where(Genre.class).findAll());
     }
 
     @Override
