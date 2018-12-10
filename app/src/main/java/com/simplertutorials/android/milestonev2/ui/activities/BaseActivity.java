@@ -14,5 +14,5 @@ public class BaseActivity extends AppCompatActivity {
     public String getLanguageString() {
         return getContext().getString(R.string.languageCodeForApı);
     }
-
+ 
 }
