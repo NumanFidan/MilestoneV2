@@ -21,7 +21,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.simplertutorials.android.milestonev2.MainActivity;
+import com.simplertutorials.android.milestonev2.ui.activities.MainActivity;
 import com.simplertutorials.android.milestonev2.R;
 import com.simplertutorials.android.milestonev2.domain.Company;
 import com.simplertutorials.android.milestonev2.domain.Genre;

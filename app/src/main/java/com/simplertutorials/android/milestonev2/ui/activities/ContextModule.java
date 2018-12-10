@@ -1,4 +1,4 @@
-package com.simplertutorials.android.milestonev2;
+package com.simplertutorials.android.milestonev2.ui.activities;
 
 import android.content.Context;
 

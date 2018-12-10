@@ -1,5 +1,9 @@
 package com.simplertutorials.android.milestonev2;
 
+import com.simplertutorials.android.milestonev2.data.api.ApiModule;
+import com.simplertutorials.android.milestonev2.data.database.DatabaseModule;
+import com.simplertutorials.android.milestonev2.ui.activities.ContextModule;
+import com.simplertutorials.android.milestonev2.ui.activities.MainActivity;
 import com.simplertutorials.android.milestonev2.ui.fragments.HomeFragment;
 import com.simplertutorials.android.milestonev2.ui.fragments.MovieDetailsFragment;
 

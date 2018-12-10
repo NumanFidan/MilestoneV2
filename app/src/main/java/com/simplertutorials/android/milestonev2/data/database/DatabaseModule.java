@@ -1,6 +1,8 @@
-package com.simplertutorials.android.milestonev2;
+package com.simplertutorials.android.milestonev2.data.database;
 
 import android.content.Context;
+
+import com.simplertutorials.android.milestonev2.ui.activities.ContextModule;
 
 import javax.inject.Singleton;
 

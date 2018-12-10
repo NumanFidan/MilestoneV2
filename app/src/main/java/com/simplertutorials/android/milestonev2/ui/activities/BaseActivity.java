@@ -1,8 +1,10 @@
-package com.simplertutorials.android.milestonev2;
+package com.simplertutorials.android.milestonev2.ui.activities;
 
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
+
+import com.simplertutorials.android.milestonev2.R;
 
 public class BaseActivity extends AppCompatActivity {
 

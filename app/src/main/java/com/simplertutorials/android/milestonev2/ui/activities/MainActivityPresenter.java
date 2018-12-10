@@ -1,5 +1,6 @@
-package com.simplertutorials.android.milestonev2;
+package com.simplertutorials.android.milestonev2.ui.activities;
 
+import com.simplertutorials.android.milestonev2.BuildConfig;
 import com.simplertutorials.android.milestonev2.data.api.ApiService;
 import com.simplertutorials.android.milestonev2.data.database.RealmService;
 import com.simplertutorials.android.milestonev2.domain.Genre;

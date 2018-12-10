@@ -17,7 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.simplertutorials.android.milestonev2.MainActivity;
+import com.simplertutorials.android.milestonev2.ui.activities.MainActivity;
 import com.simplertutorials.android.milestonev2.MilestoneApplication;
 import com.simplertutorials.android.milestonev2.R;
 import com.simplertutorials.android.milestonev2.data.api.ApiService;

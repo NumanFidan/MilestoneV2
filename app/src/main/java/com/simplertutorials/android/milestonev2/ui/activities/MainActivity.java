@@ -1,4 +1,4 @@
-package com.simplertutorials.android.milestonev2;
+package com.simplertutorials.android.milestonev2.ui.activities;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -7,6 +7,8 @@ import android.support.v7.app.ActionBar;
 import android.view.View;
 import android.widget.TextView;
 
+import com.simplertutorials.android.milestonev2.MilestoneApplication;
+import com.simplertutorials.android.milestonev2.R;
 import com.simplertutorials.android.milestonev2.data.api.ApiService;
 import com.simplertutorials.android.milestonev2.ui.fragments.HomeFragment;
 import com.simplertutorials.android.milestonev2.ui.fragments.MovieDetailsFragment;
@@ -26,10 +28,10 @@ public class MainActivity extends BaseActivity implements  MainActivityMVP.View{
     TextView actionBarTitle;
 
     @Inject
-    Realm realm;
+    public Realm realm;
 
     @Inject
-    ApiService apiService;
+    public ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,18 +41,12 @@ public class MainActivity extends BaseActivity implements  MainActivityMVP.View{
         ((MilestoneApplication)getApplicationContext()).getCompenent().inject(this);
 
         presenter = new MainActivityPresenter(this, realm, apiService);
-//        presenter.initializeRealm();
         presenter.fetchGenreList();
 
         setUpActionBar();
         changeFragment(R.id.content_main, new HomeFragment());
 
-//        ApplicationCompenent compenent = DaggerApplicationCompenent.builder()
-//                .contextModule(new ContextModule(this))
-//                .build();
-
     }
-
 
     private void setUpActionBar() {
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);

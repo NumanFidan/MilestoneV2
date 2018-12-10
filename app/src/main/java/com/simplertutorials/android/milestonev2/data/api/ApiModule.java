@@ -1,6 +1,4 @@
-package com.simplertutorials.android.milestonev2;
-
-import com.simplertutorials.android.milestonev2.data.api.ApiService;
+package com.simplertutorials.android.milestonev2.data.api;
 
 import javax.inject.Singleton;
 
