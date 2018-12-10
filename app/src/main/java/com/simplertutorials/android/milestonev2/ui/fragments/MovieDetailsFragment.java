@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
@@ -95,17 +96,32 @@ public class MovieDetailsFragment extends Fragment implements MovieDetailsMVP.Vi
     private boolean showingAllDetails = false;
     private MovieDetailsPresenter presenter;
 
+    private static final String ARG_MOVIE_PARAM = "detailedMovie";
+    private Parcelable movieParam;
+
     public MovieDetailsFragment() {
         // Required empty public constructor
+    }
+
+    public static MovieDetailsFragment newInstance(Parcelable movieParam) {
+        MovieDetailsFragment fragment = new MovieDetailsFragment();
+        Bundle args = new Bundle();
+        args.putParcelable(ARG_MOVIE_PARAM, movieParam);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityCompat.postponeEnterTransition(getActivity());
+
+        if (getArguments() != null) {
+            currentMovie = getArguments().getParcelable(ARG_MOVIE_PARAM);
+        }
+
         presenter = new MovieDetailsPresenter(this);
 
-        currentMovie = presenter.getCurrentMovie();
         setUpActionBar();
     }
 

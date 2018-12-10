@@ -1,7 +1,7 @@
 package com.simplertutorials.android.milestonev2.domain;
 
 import com.google.gson.annotations.SerializedName;
-import com.simplertutorials.android.milestonev2.data.DataHolder;
+import com.simplertutorials.android.milestonev2.BuildConfig;
 
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
@@ -43,7 +43,7 @@ public class Company extends RealmObject {
         if (logoPath.contains("http"))
             return logoPath;
         else
-            return DataHolder.getInstance().getApiBaseImageUrl()+logoPath;
+            return BuildConfig.imageBaseUrl +logoPath;
     }
 
     public String getName() {

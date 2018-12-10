@@ -12,6 +12,8 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        buildConfigField('String', "apiKey", '"6947b6102ef7af19f5aee4b5a566ecbc"')
+        buildConfigField('String', "imageBaseUrl", '"http://image.tmdb.org/t/p/w342"')
     }
     buildTypes {
         release {
@@ -60,8 +62,7 @@ dependencies {
     //Rx Java
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.0'
-    implementation 'com.squareup.retrofit2:adapter-rxjava:2.1.0'
-
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
 
 
 }

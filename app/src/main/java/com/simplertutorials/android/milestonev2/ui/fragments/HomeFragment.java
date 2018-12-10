@@ -1,17 +1,13 @@
 package com.simplertutorials.android.milestonev2.ui.fragments;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -22,7 +18,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.simplertutorials.android.milestonev2.MainActivity;
+import com.simplertutorials.android.milestonev2.MilestoneApplication;
 import com.simplertutorials.android.milestonev2.R;
+import com.simplertutorials.android.milestonev2.data.api.ApiService;
 import com.simplertutorials.android.milestonev2.domain.PopularMovie;
 import com.simplertutorials.android.milestonev2.ui.adapters.MovieListRecyclerViewAdapter;
 import com.simplertutorials.android.milestonev2.ui.interfaces.HomeFragmentMVP;
@@ -35,22 +33,24 @@ import com.transitionseverywhere.TransitionSet;
 
 import java.util.ArrayList;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class HomeFragment extends Fragment implements MovieClickListener, HomeFragmentMVP.View {
+public class HomeFragment extends BaseFragment implements MovieClickListener, HomeFragmentMVP.View {
 
-    private static final int NOTIFY_ADAPTER_DATA_CHANGE = 100;
-    private static final int NOTIFY_CONNECTION_ERROR = 101;
     private ArrayList<PopularMovie> movieArrayList;
     private MovieListRecyclerViewAdapter adapter;
 
     @BindView(R.id.movieListRecyclerView)
     RecyclerView movieRecyclerView;
 
-    private Handler updateHandler;
     private ProgressDialog movieLoadingDialog;
     private HomeFragmentMVP.Presenter presenter;
+
+    @Inject
+    public ApiService apiService;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -59,9 +59,10 @@ public class HomeFragment extends Fragment implements MovieClickListener, HomeFr
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        presenter = new HomeFragmentPresenter(this);
+        ((MilestoneApplication) getActivity().getApplicationContext()).getCompenent().inject(this);
 
-        setUpHandler();
+        presenter = new HomeFragmentPresenter(this, apiService);
+
         setUpActionBar();
     }
 
@@ -73,20 +74,24 @@ public class HomeFragment extends Fragment implements MovieClickListener, HomeFr
 
         ButterKnife.bind(this, view);
 
+
+
         movieArrayList = new ArrayList<>();
         adapter = new MovieListRecyclerViewAdapter(getContext(), movieArrayList, this);
 
-        setUpRecyclerView(view);
+        setUpRecyclerView();
         presenter.loadNextPage(movieArrayList);
 
         return view;
     }
 
-    private void setUpRecyclerView(View view) {
+    private void setUpRecyclerView() {
         movieRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         movieRecyclerView.setHasFixedSize(true);
         movieRecyclerView.setAdapter(adapter);
+
         //This is for endless RecyclerView effect.
+
         movieRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
@@ -105,26 +110,15 @@ public class HomeFragment extends Fragment implements MovieClickListener, HomeFr
 
     }
 
+
     @Override
-    public String getLanguageString() {
-        return getString(R.string.languageCodeForApı);
+    public void dataChangedRecyclerView() {
+        adapter.notifyDataSetChanged();
+        dismissLoadingDialog();
     }
 
     @Override
-    public void dataChangedRecyclerViewHandler() {
-        Message handlerMessage = new Message();
-        handlerMessage.what = NOTIFY_ADAPTER_DATA_CHANGE;
-        updateHandler.sendMessage(handlerMessage);
-    }
-
-    @Override
-    public void connectionErrorHandler() {
-        Message handlerMessage = new Message();
-        handlerMessage.what = NOTIFY_CONNECTION_ERROR;
-        updateHandler.sendMessage(handlerMessage);
-    }
-
-    private void showConnectionErrorDialog() {
+    public void showConnectionErrorDialog() {
         final AlertDialog alertDialog = new AlertDialog.Builder(getContext()).create();
         String message = "Can not fetch movies from server.";
         alertDialog.setMessage(message);
@@ -148,39 +142,8 @@ public class HomeFragment extends Fragment implements MovieClickListener, HomeFr
     }
 
     @Override
-    public void showProgressDialogToUser(String message) {
-        movieLoadingDialog = new ProgressDialog(getContext());
-        movieLoadingDialog.setTitle(null);
-        movieLoadingDialog.setMessage(message);
-        movieLoadingDialog.setCancelable(false);
-        movieLoadingDialog.show();
-    }
-
-    @Override
-    public void dismissLoadingDialog() {
-        movieLoadingDialog.dismiss();
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
-        setUpHandler();
-    }
-
-    @SuppressLint("HandlerLeak")
-    private void setUpHandler() {
-        updateHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                if (msg.what == NOTIFY_ADAPTER_DATA_CHANGE) {
-                    adapter.notifyDataSetChanged();
-                    dismissLoadingDialog();
-                } else if (msg.what == NOTIFY_CONNECTION_ERROR) {
-                    showConnectionErrorDialog();
-                }
-            }
-        };
     }
 
     @Override
@@ -252,10 +215,4 @@ public class HomeFragment extends Fragment implements MovieClickListener, HomeFr
         actionBarTitle.setEllipsize(TextUtils.TruncateAt.END);
     }
 
-    @Override
-    public void showSnackBar(String message) {
-
-        Snackbar.make(getActivity().findViewById(android.R.id.content),
-                message, Snackbar.LENGTH_SHORT).show();
-    }
 }

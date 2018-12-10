@@ -1,6 +1,5 @@
 package com.simplertutorials.android.milestonev2.ui.fragments;
 
-import com.simplertutorials.android.milestonev2.data.DataHolder;
 import com.simplertutorials.android.milestonev2.data.database.RealmService;
 import com.simplertutorials.android.milestonev2.domain.Genre;
 import com.simplertutorials.android.milestonev2.domain.Movie;
@@ -14,11 +13,6 @@ public class MovieDetailsPresenter implements MovieDetailsMVP.Presenter {
         this.view = view;
     }
 
-    @Override
-    public Movie getCurrentMovie() {
-        currentMovie = DataHolder.getInstance().getDetailedMovie();
-        return currentMovie;
-    }
 
     @Override
     public Genre getGenreFromRealm(String id) {

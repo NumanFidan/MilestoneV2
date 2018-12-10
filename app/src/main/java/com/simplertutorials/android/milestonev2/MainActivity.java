@@ -1,39 +1,53 @@
 package com.simplertutorials.android.milestonev2;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
 
+import com.simplertutorials.android.milestonev2.data.api.ApiService;
 import com.simplertutorials.android.milestonev2.ui.fragments.HomeFragment;
 import com.simplertutorials.android.milestonev2.ui.fragments.MovieDetailsFragment;
 import com.simplertutorials.android.milestonev2.ui.interfaces.MainActivityMVP;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.Realm;
 
-public class MainActivity extends AppCompatActivity implements  MainActivityMVP.View{
+public class MainActivity extends BaseActivity implements  MainActivityMVP.View{
 
     private MainActivityPresenter presenter;
 
     @BindView(R.id.action_bar_title)
     TextView actionBarTitle;
 
+    @Inject
+    Realm realm;
+
+    @Inject
+    ApiService apiService;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        presenter = new MainActivityPresenter(this);
-        presenter.initializeRealm();
+        ((MilestoneApplication)getApplicationContext()).getCompenent().inject(this);
+
+        presenter = new MainActivityPresenter(this, realm, apiService);
+//        presenter.initializeRealm();
         presenter.fetchGenreList();
 
         setUpActionBar();
         changeFragment(R.id.content_main, new HomeFragment());
+
+//        ApplicationCompenent compenent = DaggerApplicationCompenent.builder()
+//                .contextModule(new ContextModule(this))
+//                .build();
 
     }
 
@@ -65,13 +79,4 @@ public class MainActivity extends AppCompatActivity implements  MainActivityMVP.
             super.onBackPressed();
     }
 
-    @Override
-    public String getLanguageString() {
-        return getString(R.string.languageCodeForApı);
-    }
-
-    @Override
-    public Context getContextFromMainActivity() {
-        return this;
-    }
 }

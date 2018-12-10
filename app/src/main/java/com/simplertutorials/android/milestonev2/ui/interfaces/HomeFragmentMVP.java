@@ -9,8 +9,8 @@ import java.util.ArrayList;
 
 public interface HomeFragmentMVP {
     interface View{
-        void dataChangedRecyclerViewHandler();
-        void connectionErrorHandler();
+        void dataChangedRecyclerView();
+        void showConnectionErrorDialog();
         void showProgressDialogToUser(String message);
         void dismissLoadingDialog();
         void replaceFragmentWithExplodeAnimation(android.view.View clickedView, final Fragment fragment);

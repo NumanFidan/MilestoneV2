@@ -5,8 +5,7 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.View;
 
-import com.simplertutorials.android.milestonev2.data.DataHolder;
-import com.simplertutorials.android.milestonev2.data.api.ApiClient;
+import com.simplertutorials.android.milestonev2.BuildConfig;
 import com.simplertutorials.android.milestonev2.data.api.ApiService;
 import com.simplertutorials.android.milestonev2.data.database.RealmService;
 import com.simplertutorials.android.milestonev2.domain.Movie;
@@ -17,105 +16,65 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-import io.reactivex.Observer;
+import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class HomeFragmentPresenter implements HomeFragmentMVP.Presenter {
 
     private final HomeFragmentMVP.View view;
     private int currentRequestedPage = 0;
+
     private ApiService apiService;
 
-    HomeFragmentPresenter(HomeFragmentMVP.View view) {
+    HomeFragmentPresenter(HomeFragmentMVP.View view, ApiService apiService) {
         this.view = view;
+        this.apiService = apiService;
     }
 
     @Override
     public void loadNextPage(ArrayList<PopularMovie> movieArrayList) {
         currentRequestedPage++;
-
-        if (apiService == null)
-            initializeApiService();
-
         getPopularMoviesFromApiService(movieArrayList);
     }
 
     private void getPopularMoviesFromApiService(ArrayList<PopularMovie> movieArrayList) {
 
+
         view.showProgressDialogToUser("Loading Movies...");
-//        Observable<PopularMoviesResponse> observable =
-                apiService
-                //Observable
-                .getPopularMovies(DataHolder.getInstance().getApiKey(),
+        //Observable
+        apiService.getPopularMovies(BuildConfig.apiKey,
                 view.getLanguageString(),
                 currentRequestedPage)
                 //Scheduler
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 //Observer
-                .subscribe(new Observer<PopularMoviesResponse>() {
+                .subscribe(new SingleObserver<PopularMoviesResponse>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
                     }
 
                     @Override
-                    public void onNext(PopularMoviesResponse popularMoviesResponse) {
+                    public void onSuccess(PopularMoviesResponse popularMoviesResponse) {
+
                         if (popularMoviesResponse.getTotalPages() < currentRequestedPage)
                             return;
                         movieArrayList.addAll(popularMoviesResponse.getPopularMovies());
-                        view.dataChangedRecyclerViewHandler();
+                        view.dataChangedRecyclerView();
                     }
 
                     @Override
                     public void onError(Throwable e) {
+
                         currentRequestedPage--;
                         view.dismissLoadingDialog();
-                        view.connectionErrorHandler();
-                    }
-
-                    @Override
-                    public void onComplete() {
-
+                        view.showConnectionErrorDialog();
                     }
                 });
-/*
-
-
-        Call<PopularMoviesResponse> call = apiService.getPopularMovies(DataHolder.getInstance().getApiKey(),
-                view.getLanguageString(),
-                currentRequestedPage);
-
-        view.showProgressDialogToUser("Loading Movies...");
-
-        call.enqueue(new retrofit2.Callback<PopularMoviesResponse>() {
-            @Override
-            public void onResponse(Call<PopularMoviesResponse> call, Response<PopularMoviesResponse> response) {
-                if (response.body().getTotalPages() < currentRequestedPage)
-                    return;
-                movieArrayList.addAll(response.body().getPopularMovies());
-                view.dataChangedRecyclerViewHandler();
-
-            }
-
-            @Override
-            public void onFailure(Call<PopularMoviesResponse> call, Throwable t) {
-                currentRequestedPage--;
-                view.dismissLoadingDialog();
-                view.connectionErrorHandler();
-            }
-
-        });*/
-    }
-
-    private void initializeApiService() {
-        apiService = ApiClient.getClient().create(ApiService.class);
     }
 
     @Override
@@ -126,7 +85,6 @@ public class HomeFragmentPresenter implements HomeFragmentMVP.Presenter {
         Movie currentMovie = RealmService.getInstance().getMovieFromRealm(id);
 
         if (currentMovie != null) {
-            Log.w("Realm Baby------------", "-------------------" + currentMovie.toString());
             movieFetchSuccessfully(currentMovie, clickedItemView);
             view.showSnackBar("This movie fetched from local database.");
         } else {
@@ -137,8 +95,6 @@ public class HomeFragmentPresenter implements HomeFragmentMVP.Presenter {
 
     @Override
     public void movieFetchSuccessfully(Movie currentMovie, View itemView) {
-        //Update Detailed movie at the Data Holder so we can access it from DetailsFragment
-        DataHolder.getInstance().setDetailedMovie(currentMovie);
 
         //Load backdrop image with Picasso to cache
         Picasso.get().load(currentMovie.getBackdropPath()).fetch(new com.squareup.picasso.Callback() {
@@ -155,8 +111,8 @@ public class HomeFragmentPresenter implements HomeFragmentMVP.Presenter {
         //In case if user returns, load everything from beginning.
         currentRequestedPage = 0;
 
-        //ReplaceFragment
-        Fragment fragment = new MovieDetailsFragment();
+        //ReplaceFragment and send detailed movie as Parcelable
+        Fragment fragment = MovieDetailsFragment.newInstance(currentMovie);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             view.replaceFragmentWithExplodeAnimation(itemView, fragment);
         } else {
@@ -193,24 +149,32 @@ public class HomeFragmentPresenter implements HomeFragmentMVP.Presenter {
     @Override
     public void getDetailsFromAPI(final String id, final View itemView) {
 
-        Call<Movie> movieCall = apiService.getMovieDetails(id,
-                DataHolder.getInstance().getApiKey(),
-                view.getLanguageString());
+        //Observable
+        apiService.getMovieDetails(id, BuildConfig.apiKey,
+                view.getLanguageString())
+                //Schedulers
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                //Observer
+                .subscribe(new SingleObserver<Movie>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
 
-        movieCall.enqueue(new Callback<Movie>() {
-            @Override
-            public void onResponse(Call<Movie> call, Response<Movie> response) {
+                    }
 
-                writeMovieToRealm(response.body(), itemView);
-            }
+                    @Override
+                    public void onSuccess(Movie movie) {
 
-            @Override
-            public void onFailure(Call<Movie> call, Throwable t) {
-                Log.w("FailedToGetMovieDetails", "Movie Details couldn't fetched from API"
-                        + t.getMessage());
-                view.dismissLoadingDialog();
-                view.showSnackBar("Unable to fetch data from API!");
-            }
-        });
+                        writeMovieToRealm(movie, itemView);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.w("FailedToGetMovieDetails", "Movie Details couldn't fetched from API"
+                                + e.getMessage());
+                        view.dismissLoadingDialog();
+                        view.showSnackBar("Unable to fetch data from API!");
+                    }
+                });
     }
 }

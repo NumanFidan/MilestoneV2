@@ -3,7 +3,7 @@ package com.simplertutorials.android.milestonev2.domain;
 import android.support.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
-import com.simplertutorials.android.milestonev2.data.DataHolder;
+import com.simplertutorials.android.milestonev2.BuildConfig;
 
 import java.util.List;
 
@@ -50,7 +50,7 @@ public class PopularMovie {
     }
 
     public String getPosterUrl() {
-        return DataHolder.getInstance().getApiBaseImageUrl() + posterPath;
+        return BuildConfig.imageBaseUrl + posterPath;
     }
 
     public List<String> getGenreIds() {
