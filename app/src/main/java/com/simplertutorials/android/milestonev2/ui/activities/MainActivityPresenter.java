@@ -18,24 +18,14 @@ public class MainActivityPresenter implements MainActivityMVP.Presenter {
     private final MainActivityMVP.View view;
     private Realm realm;
     private ApiService apiService;
-//    private boolean realmInitialized = false;
 
     public MainActivityPresenter(MainActivityMVP.View view, Realm realm, ApiService apiService) {
         this.view = view;
         this.realm = realm;
         this.apiService = apiService;
     }
-//
-//    public void initializeRealm() {
-//        Realm.init(view.getContext());
-//        realmInitialized = true;
-//    }
 
     public void fetchGenreList() {
-//        if (!realmInitialized)
-//            initializeRealm();
-
-//        Realm realm = Realm.getDefaultInstance();
 
         Genre genre = realm.where(Genre.class).findFirst();
 
@@ -69,29 +59,6 @@ public class MainActivityPresenter implements MainActivityMVP.Presenter {
 
                     }
                 });
-//
-//                Call < GenresResponse > genresResponseCall = apiService.fetchGenres(
-//                DataHolder.getInstance().getApiKey(),
-//                view.getLanguageString());
-//
-//        genresResponseCall.enqueue(new Callback<GenresResponse>() {
-//            @Override
-//            public void onResponse(Call<GenresResponse> call, Response<GenresResponse> response) {
-//
-//                //Saving all genre data to ArrayList in DataHolder for further usages
-//
-//                if (response.body() != null)
-//                    for (int i = 0; i < response.body().getGenreList().size(); i++)
-//                        writeGenreToRealm(response.body().getGenreList().get(i));
-//
-//            }
-//
-//            @Override
-//            public void onFailure(Call<GenresResponse> call, Throwable t) {
-//
-//            }
-//        });
-
     }
 
     private void writeGenreToRealm(Genre genre) {
