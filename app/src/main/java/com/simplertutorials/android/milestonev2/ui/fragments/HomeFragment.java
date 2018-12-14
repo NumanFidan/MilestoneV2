@@ -1,7 +1,7 @@
 package com.simplertutorials.android.milestonev2.ui.fragments;
 
+import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.graphics.Rect;
 import android.os.Build;
@@ -17,13 +17,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.simplertutorials.android.milestonev2.ui.activities.MainActivity;
 import com.simplertutorials.android.milestonev2.MilestoneApplication;
 import com.simplertutorials.android.milestonev2.R;
 import com.simplertutorials.android.milestonev2.data.api.ApiService;
+import com.simplertutorials.android.milestonev2.data.database.RealmService;
 import com.simplertutorials.android.milestonev2.domain.PopularMovie;
+import com.simplertutorials.android.milestonev2.ui.activities.MainActivity;
 import com.simplertutorials.android.milestonev2.ui.adapters.MovieListRecyclerViewAdapter;
-import com.simplertutorials.android.milestonev2.ui.interfaces.HomeFragmentMVP;
 import com.simplertutorials.android.milestonev2.ui.interfaces.MovieClickListener;
 import com.transitionseverywhere.Explode;
 import com.transitionseverywhere.Fade;
@@ -38,19 +38,20 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class HomeFragment extends BaseFragment implements MovieClickListener, HomeFragmentMVP.View {
+public class HomeFragment extends Fragment implements MovieClickListener {
 
+    private Activity activity;
     private ArrayList<PopularMovie> movieArrayList;
     private MovieListRecyclerViewAdapter adapter;
 
     @BindView(R.id.movieListRecyclerView)
     RecyclerView movieRecyclerView;
 
-    private ProgressDialog movieLoadingDialog;
-    private HomeFragmentMVP.Presenter presenter;
 
     @Inject
     public ApiService apiService;
+    @Inject
+    RealmService realmService;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -60,8 +61,6 @@ public class HomeFragment extends BaseFragment implements MovieClickListener, Ho
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ((MilestoneApplication) getActivity().getApplicationContext()).getCompenent().inject(this);
-
-        presenter = new HomeFragmentPresenter(this, apiService);
 
         setUpActionBar();
     }
@@ -74,13 +73,12 @@ public class HomeFragment extends BaseFragment implements MovieClickListener, Ho
 
         ButterKnife.bind(this, view);
 
-
-
         movieArrayList = new ArrayList<>();
-        adapter = new MovieListRecyclerViewAdapter(getContext(), movieArrayList, this);
+        adapter = new MovieListRecyclerViewAdapter(getContext(), movieArrayList,
+                this, realmService);
 
         setUpRecyclerView();
-        presenter.loadNextPage(movieArrayList);
+        ((MainActivity)activity).getPresenter().loadNextPopularPage(movieArrayList);
 
         return view;
     }
@@ -102,7 +100,7 @@ public class HomeFragment extends BaseFragment implements MovieClickListener, Ho
                     //if user is not able to scroll down this means its end of the RecyclerView
                     if (!recyclerView.canScrollVertically(View.FOCUS_DOWN)) {
                         //if we still have results to load from API, load next page
-                        presenter.loadNextPage(movieArrayList);
+                        ((MainActivity)activity).getPresenter().loadNextPopularPage(movieArrayList);
                     }
                 }
             }
@@ -110,14 +108,11 @@ public class HomeFragment extends BaseFragment implements MovieClickListener, Ho
 
     }
 
-
-    @Override
     public void dataChangedRecyclerView() {
         adapter.notifyDataSetChanged();
-        dismissLoadingDialog();
+//        dismissLoadingDialog();
     }
 
-    @Override
     public void showConnectionErrorDialog() {
         final AlertDialog alertDialog = new AlertDialog.Builder(getContext()).create();
         String message = "Can not fetch movies from server.";
@@ -127,7 +122,7 @@ public class HomeFragment extends BaseFragment implements MovieClickListener, Ho
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        presenter.loadNextPage(movieArrayList);
+                        ((MainActivity)activity).getPresenter().loadNextPopularPage(movieArrayList);
                         alertDialog.dismiss();
                     }
                 });
@@ -152,13 +147,19 @@ public class HomeFragment extends BaseFragment implements MovieClickListener, Ho
     }
 
     @Override
-    public void onMovieItemClick(PopularMovie movie, View itemView) {
-        showProgressDialogToUser("Getting Movie From Server");
-
-        presenter.getDetailsOfMovie(movie.getId(), itemView);
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        this.activity = activity;
+        ((MainActivity)activity).getPresenter().attachFragment(this);
     }
 
     @Override
+    public void onMovieItemClick(PopularMovie movie, View itemView) {
+        ((MainActivity)activity).showProgressDialogToUser("Getting Movie From Server");
+
+        ((MainActivity)activity).getPresenter().getDetailsOfMovie(movie.getId(), itemView);
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void replaceFragmentWithExplodeAnimation(View clickedView, final Fragment fragment) {
         // save rect of view in screen coordinated
@@ -188,13 +189,11 @@ public class HomeFragment extends BaseFragment implements MovieClickListener, Ho
             public void run() {
 
                 movieRecyclerView.setAdapter(null);
-                // Stuff that updates the UI
 
             }
         });
     }
 
-    @Override
     public void replaceFragment(Fragment fragment) {
         MainActivity mainActivity = (MainActivity) getContext();
 
@@ -215,4 +214,8 @@ public class HomeFragment extends BaseFragment implements MovieClickListener, Ho
         actionBarTitle.setEllipsize(TextUtils.TruncateAt.END);
     }
 
+    public interface HomeFragmentCallback{
+        void loadNextPopularPage(ArrayList<PopularMovie> movieArrayList);
+        void getDetailsOfMovie(final String id, final View clickedItemView);
+    }
 }

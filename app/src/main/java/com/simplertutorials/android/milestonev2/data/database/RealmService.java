@@ -1,21 +1,22 @@
 package com.simplertutorials.android.milestonev2.data.database;
 
+import android.content.Context;
+import android.util.Log;
+
 import com.simplertutorials.android.milestonev2.domain.Genre;
 import com.simplertutorials.android.milestonev2.domain.Movie;
+
+import javax.inject.Inject;
 
 import io.realm.Realm;
 
 public class RealmService {
-    private static RealmService instance = new RealmService();
     private Realm realm;
 
-
-    private RealmService() {
+    @Inject
+    public RealmService(Context context) {
+        Realm.init(context);
         realm = Realm.getDefaultInstance();
-    }
-
-    public static RealmService getInstance() {
-        return instance;
     }
 
     public void writeGenreToRealm(Genre genre) {
@@ -28,14 +29,16 @@ public class RealmService {
     }
 
     public Genre getGenreFromRealm(String id){
-
         Genre genre = realm.where(Genre.class).equalTo("id", id).findFirst();
-
 
         return genre;
     }
 
     public Movie getMovieFromRealm(String id){
         return realm.where(Movie.class).equalTo("id", id).findFirst();
+    }
+
+    public Genre getFirstGenre(){
+        return realm.where(Genre.class).findFirst();
     }
 }

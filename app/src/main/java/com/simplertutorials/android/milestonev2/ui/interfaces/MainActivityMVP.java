@@ -8,6 +8,9 @@ public interface MainActivityMVP {
         Context getContext();
 
         String getLanguageString();
+        void showProgressDialogToUser(String message);
+        void dismissLoadingDialog();
+        void showSnackBar(String message);
     }
 
     interface Presenter {

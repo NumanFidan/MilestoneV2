@@ -1,6 +1,7 @@
 package com.simplertutorials.android.milestonev2.ui.fragments;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,12 +22,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.simplertutorials.android.milestonev2.ui.activities.MainActivity;
+import com.simplertutorials.android.milestonev2.MilestoneApplication;
 import com.simplertutorials.android.milestonev2.R;
+import com.simplertutorials.android.milestonev2.data.database.RealmService;
 import com.simplertutorials.android.milestonev2.domain.Company;
 import com.simplertutorials.android.milestonev2.domain.Genre;
 import com.simplertutorials.android.milestonev2.domain.Movie;
-import com.simplertutorials.android.milestonev2.ui.interfaces.MovieDetailsMVP;
+import com.simplertutorials.android.milestonev2.ui.activities.MainActivity;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -34,12 +36,14 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 import java.util.Locale;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class MovieDetailsFragment extends Fragment implements MovieDetailsMVP.View {
+public class MovieDetailsFragment extends Fragment {
 
     private Movie currentMovie;
 
@@ -93,11 +97,13 @@ public class MovieDetailsFragment extends Fragment implements MovieDetailsMVP.Vi
     @BindView(R.id.companies_movieDetail_layout)
     LinearLayout companiesLayout;
 
+    @Inject
+    RealmService realmService;
+
     private boolean showingAllDetails = false;
-    private MovieDetailsPresenter presenter;
+    private Activity activity;
 
     private static final String ARG_MOVIE_PARAM = "detailedMovie";
-    private Parcelable movieParam;
 
     public MovieDetailsFragment() {
         // Required empty public constructor
@@ -120,7 +126,8 @@ public class MovieDetailsFragment extends Fragment implements MovieDetailsMVP.Vi
             currentMovie = getArguments().getParcelable(ARG_MOVIE_PARAM);
         }
 
-        presenter = new MovieDetailsPresenter(this);
+        ((MilestoneApplication) getActivity().getApplicationContext()).getCompenent().inject(this);
+
 
         setUpActionBar();
     }
@@ -140,6 +147,14 @@ public class MovieDetailsFragment extends Fragment implements MovieDetailsMVP.Vi
     @Override
     public void onDetach() {
         super.onDetach();
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        this.activity = activity;
+        if (activity instanceof MainActivity)
+            ((MainActivity)activity).getPresenter().attachFragment(this);
     }
 
     @SuppressLint("HandlerLeak")
@@ -173,8 +188,7 @@ public class MovieDetailsFragment extends Fragment implements MovieDetailsMVP.Vi
         Genre genreObj;
         for (int i = 0; i < genreList.size(); i++) {
 
-            genreObj = presenter.getGenreFromRealm(genreList.get(i).getId());
-
+            genreObj = ((MainActivity)activity).getPresenter().getGenreFromRealm(genreList.get(i).getId());
             TextView genre = new TextView(getContext());
             genre.setText(genreObj.getName());
             genre.setBackgroundResource(R.drawable.dark_rounded_background);
@@ -330,4 +344,9 @@ public class MovieDetailsFragment extends Fragment implements MovieDetailsMVP.Vi
         actionBarTitle.setMaxLines(1);
         actionBarTitle.setEllipsize(TextUtils.TruncateAt.END);
     }
+
+    public interface MovieDetailsFragmentCallback{
+        Genre getGenreFromRealm(String id);
+    }
+
 }

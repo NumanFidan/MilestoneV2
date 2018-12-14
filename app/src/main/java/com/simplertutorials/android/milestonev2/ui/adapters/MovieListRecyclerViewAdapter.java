@@ -32,12 +32,14 @@ public class MovieListRecyclerViewAdapter extends RecyclerView.Adapter<MovieList
     private ArrayList<PopularMovie> movieArrayList;
     private Context context;
     private MovieClickListener movieClickListener;
+    private RealmService realmService;
 
     public MovieListRecyclerViewAdapter(Context context, ArrayList<PopularMovie> movieArrayList,
-                                        MovieClickListener movieClickListener) {
+                                        MovieClickListener movieClickListener, RealmService realmService) {
         this.context = context;
         this.movieArrayList = movieArrayList;
         this.movieClickListener = movieClickListener;
+        this.realmService = realmService;
     }
 
     @NonNull
@@ -74,7 +76,7 @@ public class MovieListRecyclerViewAdapter extends RecyclerView.Adapter<MovieList
 
         Genre genreObj;
         for (int i = 0; i < genreList.size(); i++) {
-            genreObj = RealmService.getInstance().getGenreFromRealm(genreList.get(i));
+            genreObj = realmService.getGenreFromRealm(genreList.get(i));
 
             TextView genre = new TextView(context);
             genre.setText(genreObj.getName());

@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.simplertutorials.android.milestonev2.MilestoneApplication;
 import com.simplertutorials.android.milestonev2.R;
 import com.simplertutorials.android.milestonev2.data.api.ApiService;
+import com.simplertutorials.android.milestonev2.data.database.RealmService;
 import com.simplertutorials.android.milestonev2.ui.fragments.HomeFragment;
 import com.simplertutorials.android.milestonev2.ui.fragments.MovieDetailsFragment;
 import com.simplertutorials.android.milestonev2.ui.interfaces.MainActivityMVP;
@@ -18,7 +19,6 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.realm.Realm;
 
 public class MainActivity extends BaseActivity implements  MainActivityMVP.View{
 
@@ -28,10 +28,10 @@ public class MainActivity extends BaseActivity implements  MainActivityMVP.View{
     TextView actionBarTitle;
 
     @Inject
-    public Realm realm;
+    RealmService realmService;
 
     @Inject
-    public ApiService apiService;
+    ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +40,7 @@ public class MainActivity extends BaseActivity implements  MainActivityMVP.View{
 
         ((MilestoneApplication)getApplicationContext()).getCompenent().inject(this);
 
-        presenter = new MainActivityPresenter(this, realm, apiService);
+        presenter = new MainActivityPresenter(this, realmService, apiService);
         presenter.fetchGenreList();
 
         setUpActionBar();
@@ -75,4 +75,7 @@ public class MainActivity extends BaseActivity implements  MainActivityMVP.View{
             super.onBackPressed();
     }
 
+    public MainActivityPresenter getPresenter() {
+        return presenter;
+    }
 }

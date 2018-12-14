@@ -2,22 +2,24 @@ package com.simplertutorials.android.milestonev2;
 
 import android.support.multidex.MultiDexApplication;
 
-import com.simplertutorials.android.milestonev2.ui.activities.ContextModule;
+import com.simplertutorials.android.milestonev2.components.ApplicationComponent;
+import com.simplertutorials.android.milestonev2.components.ContextModule;
+import com.simplertutorials.android.milestonev2.components.DaggerApplicationComponent;
 
 public class MilestoneApplication extends MultiDexApplication {
 
-    private ApplicationCompenent applicationCompenent;
+    private ApplicationComponent applicationComponent;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        applicationCompenent = DaggerApplicationCompenent.builder()
+        applicationComponent = DaggerApplicationComponent.builder()
                 .contextModule(new ContextModule(this))
                 .build();
     }
 
-    public ApplicationCompenent getCompenent(){
-        return applicationCompenent;
+    public ApplicationComponent getCompenent(){
+        return applicationComponent;
     }
 }
