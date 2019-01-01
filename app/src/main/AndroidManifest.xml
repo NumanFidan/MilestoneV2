@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.simplertutorials.android.milestonev2">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".MilestoneApplication"
         android:allowBackup="true"
@@ -22,7 +24,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ui.activities.SampleActivity"></activity>
     </application>
-    <uses-permission android:name="android.permission.INTERNET" />
 
 </manifest>
