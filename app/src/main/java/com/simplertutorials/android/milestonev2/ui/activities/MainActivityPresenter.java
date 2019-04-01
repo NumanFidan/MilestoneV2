@@ -63,30 +63,6 @@ public class MainActivityPresenter implements MainActivityMVP.Presenter, HomeFra
                 .doOnNext(this::writeGenreToRealm)
                 .subscribe();
 
-        /*//Observable
-        apiService.fetchGenres(BuildConfig.apiKey,
-                view.getLanguageString())
-                //Scheduler
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                //Observer
-                .subscribe(new SingleObserver<GenresResponse>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onSuccess(GenresResponse genresResponse) {
-                        for (int i = 0; i < genresResponse.getGenreList().size(); i++)
-                            writeGenreToRealm(genresResponse.getGenreList().get(i));
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-                });*/
     }
 
     private void writeGenreToRealm(Genre genre) {

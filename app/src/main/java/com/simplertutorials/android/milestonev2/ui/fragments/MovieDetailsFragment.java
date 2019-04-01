@@ -124,6 +124,7 @@ public class MovieDetailsFragment extends Fragment {
 
         if (getArguments() != null) {
             currentMovie = getArguments().getParcelable(ARG_MOVIE_PARAM);
+            getArguments().remove(ARG_MOVIE_PARAM);
         }
 
         ((MilestoneApplication) getActivity().getApplicationContext()).getCompenent().inject(this);
